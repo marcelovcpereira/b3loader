@@ -16,9 +16,9 @@ import (
 const QuoteFileLoaderBufferSize = 200
 
 func main() {
-	fmt.Printf("--------------------------------------")
-	fmt.Printf("   Starting B3 Quotes Loader v1.0.0")
-	fmt.Printf("--------------------------------------")
+	fmt.Printf("--------------------------------------\n")
+	fmt.Printf("   Starting B3 Quotes Loader v1.0.0\n")
+	fmt.Printf("--------------------------------------\n")
 	directoryPath := os.Getenv("DIRECTORY_PATH")
 	org := os.Getenv("INFLUXDB_ORG")
 	bucket := os.Getenv("INFLUXDB_BUCKET")
@@ -105,6 +105,10 @@ func ConnectToInfluxDB() (influxdb2.Client, error) {
 
 	// validate client connection health
 	check, err := client.Health(context.Background())
+	if err != nil {
+		fmt.Printf("ERROR CONNECTING TO INFLUXDB!!!!\n")
+		panic(err)
+	}
 	fmt.Printf("Connection health: %s\n", check.Status)
 	return client, err
 }
