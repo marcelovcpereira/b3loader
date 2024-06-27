@@ -11,6 +11,8 @@ services:
       DIRECTORY_PATH: "/mnt/data"
     volumes:
       - ./data/b3loader-data:/mnt/data
+    ports:
+      - "8080:8080"
   influxdb:
     image: influxdb:2.0.7
     container_name: influxdb
