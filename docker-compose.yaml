@@ -16,6 +16,7 @@ services:
   influxdb:
     image: influxdb:2.0.7
     container_name: influxdb
+    restart: always
     environment:
       DOCKER_INFLUXDB_INIT_MODE: "setup"
       DOCKER_INFLUXDB_INIT_USERNAME: "influxdb"
@@ -25,6 +26,8 @@ services:
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influxdb"
     ports:
       - "8086:8086"
+    volumes:
+      - ./influxdb-data:/var/lib/influxdb
   grafana:
     image: grafana/grafana
     container_name: grafana
