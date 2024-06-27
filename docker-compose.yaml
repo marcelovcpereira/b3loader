@@ -1,6 +1,6 @@
 services:
   b3loader:
-    image: b3loader:latest
+    image: b3loader
     container_name: b3loader
     environment:
       INFLUXDB_TOKEN: "influxdb"
@@ -14,7 +14,7 @@ services:
     ports:
       - "8080:8080"
   influxdb:
-    image: influxdb:2.0.7
+    image: influxdb
     container_name: influxdb
     restart: always
     environment:
@@ -27,12 +27,17 @@ services:
     ports:
       - "8086:8086"
     volumes:
-      - ./influxdb-data:/var/lib/influxdb
+      - ./data/influxdb-data:/var/lib/influxdb
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana-enterprise
     container_name: grafana
     user: "$UID:$GID"
+    depends_on:
+      - influxdb
     ports:
       - 3000:3000
     volumes:
       - ./data/grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=grafana
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
