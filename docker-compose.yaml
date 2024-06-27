@@ -4,7 +4,7 @@ services:
     container_name: b3loader
     environment:
       INFLUXDB_TOKEN: "influxdb"
-      INFLUXDB_URL: "influxdb:8086"
+      INFLUXDB_URL: "http://influxdb:8086"
       INFLUXDB_ORG: "b3loader"
       INFLUXDB_BUCKET: "quote_events"
       ENVIRONMENT: "dev"
