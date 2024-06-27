@@ -20,15 +20,17 @@ func main() {
 	fmt.Printf("   Starting B3 Quotes Loader v1.0.0\n")
 	fmt.Printf("--------------------------------------\n")
 	directoryPath := os.Getenv("DIRECTORY_PATH")
+	influxUrl := os.Getenv("INFLUXDB_URL")
 	org := os.Getenv("INFLUXDB_ORG")
 	bucket := os.Getenv("INFLUXDB_BUCKET")
+	token := os.Getenv("INFLUXDB_TOKEN")
 	fmt.Printf(
 		"Upload directory: %s\nInfluxdb:\n\tHost: %s\n\tOrg: %s\n\tBucket: %s\n\tToken: %s\nWaiting connections...\n",
 		directoryPath,
-		os.Getenv("INFLUXDB_URL"),
-		os.Getenv("INFLUXDB_ORG"),
-		os.Getenv("BUCKET"),
-		os.Getenv(os.Getenv("INFLUXDB_TOKEN")),
+		influxUrl,
+		org,
+		bucket,
+		token,
 	)
 
 	mux := http.NewServeMux()
