@@ -10,7 +10,7 @@ services:
       ENVIRONMENT: "dev"
       DIRECTORY_PATH: "/mnt/data"
     volumes:
-      - ./b3loader-data:/mnt/data
+      - ./data/b3loader-data:/mnt/data
   influxdb:
     image: influxdb:2.0.7
     container_name: influxdb
@@ -30,4 +30,4 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./grafana-data:/var/lib/grafana
+      - ./data/grafana-data:/var/lib/grafana
