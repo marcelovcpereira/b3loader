@@ -1,0 +1,33 @@
+services:
+  b3loader:
+    image: b3loader:latest
+    container_name: b3loader
+    environment:
+      INFLUXDB_TOKEN: influxdb
+      INFLUXDB_URL: "influxdb"
+      INFLUXDB_ORG: "b3loader"
+      INFLUXDB_BUCKET: quote_events
+      ENVIRONMENT: "dev"
+      DIRECTORY_PATH: "/mnt/data"
+    volumes:
+      - ./b3loader-data:/mnt/data
+  influxdb:
+    image: influxdb:2.0.7
+    container_name: influxdb
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: influxdb
+      DOCKER_INFLUXDB_INIT_PASSWORD: influxdb
+      DOCKER_INFLUXDB_INIT_ORG: "b3loader"
+      DOCKER_INFLUXDB_INIT_BUCKET: quote_events
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: influxdb
+    ports:
+      - "8086:8086"
+  grafana:
+    build:
+      context: ./grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana-data:/var/lib/grafana
