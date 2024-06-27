@@ -66,6 +66,7 @@ func ParseMoney(str string) float64 {
 
 func DailyQuoteToInfluxPoint(quote DailyQuote) *write.Point {
 	return influxdb2.NewPointWithMeasurement("daily_quote").
+		AddTag("StockName", quote.StockName).
 		AddField("Date", quote.Date).
 		AddField("BDICode", quote.BDICode).
 		AddField("StockName", quote.StockName).
