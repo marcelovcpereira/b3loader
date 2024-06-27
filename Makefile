@@ -35,3 +35,8 @@ govet:
 
 test:
 	$(GOTEST) -cover ./...
+
+refresh:
+	git pull origin master && \
+	make build-docker && \
+	docker compose up -d --force-recreate b3loader
