@@ -28,8 +28,7 @@ build-loader:
 	$(GOBUILD) -o build/b3loader -v github.com/marcelovcpereira/b3loader/cmd
 
 build-docker:
-	cd build && \
-	docker build -t b3loader .
+	docker build -t b3loader:latest -f build/Dockerfile .
 
 govet:
 	$(GOVET) ./...
