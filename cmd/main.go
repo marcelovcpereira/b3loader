@@ -22,6 +22,14 @@ func main() {
 	directoryPath := os.Getenv("DIRECTORY_PATH")
 	org := os.Getenv("INFLUXDB_ORG")
 	bucket := os.Getenv("INFLUXDB_BUCKET")
+	fmt.Printf(
+		"Upload directory: %s\nInfluxdb:\n\tHost: %s\n\tOrg: %s\n\tBucket: %s\n\tToken: %s\nWaiting connections...\n",
+		directoryPath,
+		os.Getenv("INFLUXDB_URL"),
+		os.Getenv("INFLUXDB_ORG"),
+		os.Getenv("BUCKET"),
+		os.Getenv(os.Getenv("INFLUXDB_TOKEN")),
+	)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/quotes/load/{name}", func(w http.ResponseWriter, req *http.Request) {
@@ -37,7 +45,8 @@ func handleFile(filePath string, org string, bucket string) {
 	readFile, err := os.Open(filePath)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Printf("ERROR OPENING FILE: %v\n", err)
+		return
 	}
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
