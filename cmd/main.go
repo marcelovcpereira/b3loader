@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/marcelovcpereira/b3loader/internal/common"
 	"log"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 	"strings"
 )
 
-const QuoteFileLoaderBufferSize = 200
+const QuoteFileLoaderBufferSize = 1000
 
 func main() {
 	fmt.Printf("--------------------------------------\n")
@@ -86,14 +87,19 @@ func handleFile(filePath string, org string, bucket string) {
 }
 
 func persistQuotes(client influxdb2.Client, quotes []common.DailyQuote, org string, bucket string) error {
-	writeAPI := client.WriteAPI(org, bucket)
-	// write line protocol
+	writeAPI := client.WriteAPIBlocking(org, bucket)
+	var points []*write.Point
 	for _, quote := range quotes {
 		point := common.DailyQuoteToInfluxPoint(quote)
-		writeAPI.WritePoint(point)
+		points = append(points, point)
 	}
+	fmt.Printf("Persisting %d points ...\n", len(points))
+	if err := writeAPI.WritePoint(context.Background(), points...); err != nil {
+		log.Fatal(err)
+	}
+
 	// Flush writes
-	writeAPI.Flush()
+	writeAPI.Flush(context.Background())
 	return nil
 }
 
