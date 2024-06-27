@@ -91,7 +91,7 @@ func DailyQuoteToInfluxPoint(quote DailyQuote) *write.Point {
 		AddField("PrecoPontos", quote.PrecoPontos).
 		AddField("ISINCode", quote.ISINCode).
 		AddField("Dismes", quote.Dismes).
-		SetTime(time.Now())
+		SetTime(quote.Date)
 }
 
 func ParseLineToDailyQuote(line string) DailyQuote {
