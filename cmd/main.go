@@ -1,52 +1,54 @@
 package main
 
 import (
+	"archive/zip"
 	"bufio"
-	"context"
-	"errors"
 	"fmt"
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
-	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/marcelovcpereira/b3loader/internal/common"
+	db2 "github.com/marcelovcpereira/b3loader/internal/db"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 )
 
-const QuoteFileLoaderBufferSize = 1000
+const DefaultCutoffDate = "20180101"
+const CutoffDate = DefaultCutoffDate
+const QuoteFileLoaderBufferSize = 7000
+const DefaultSleepSeconds = 4
+const SLEEP = DefaultSleepSeconds * time.Second
 
 func main() {
 	fmt.Printf("--------------------------------------\n")
 	fmt.Printf("   Starting B3 Quotes Loader v1.0.0\n")
 	fmt.Printf("--------------------------------------\n")
-	directoryPath := os.Getenv("DIRECTORY_PATH")
-	influxUrl := os.Getenv("INFLUXDB_URL")
-	org := os.Getenv("INFLUXDB_ORG")
-	bucket := os.Getenv("INFLUXDB_BUCKET")
-	token := os.Getenv("INFLUXDB_TOKEN")
-	fmt.Printf(
-		"Upload directory: %s\nInfluxdb:\n\tHost: %s\n\tOrg: %s\n\tBucket: %s\n\tToken: %s\nWaiting connections...\n",
-		directoryPath,
-		influxUrl,
-		org,
-		bucket,
-		token,
-	)
-
+	config := common.LoadConfig()
+	fmt.Printf("Configured to run at %.1f quotes/s\n", float64(QuoteFileLoaderBufferSize/DefaultSleepSeconds))
+	config.PrintConfig()
+	db := db2.NewInfluxQuoteDB(config, QuoteFileLoaderBufferSize)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/quotes/load/{name}", func(w http.ResponseWriter, req *http.Request) {
-		name := req.PathValue("name")
-		filePath := directoryPath + "/" + name
+		start := time.Now()
+		filePath := config.GetFilePath(req.PathValue("name"))
 		fmt.Printf("New quote request for file %s\n", filePath)
-		handleFile(filePath, org, bucket)
+		handleFile(db, filePath)
+		elapsed := time.Since(start)
+		log.Printf("file loaded in %s", elapsed)
 	})
+	fmt.Println("Waiting connections...")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
 
-func handleFile(filePath string, org string, bucket string) {
+func handleFile(db common.QuoteDB, filePath string) {
+	filePath, err := checkZip(filePath)
+	if err != nil {
+		fmt.Printf("ERROR EXTRACTING FILE: %v\n", err)
+		return
+	}
 	readFile, err := os.Open(filePath)
-
 	if err != nil {
 		fmt.Printf("ERROR OPENING FILE: %v\n", err)
 		return
@@ -59,73 +61,121 @@ func handleFile(filePath string, org string, bucket string) {
 
 	var quotesBuffer []common.DailyQuote
 	totalQuotes := 0
-	client, err := ConnectToInfluxDB()
-	if err != nil {
-		panic(err)
-	}
+	batchCount := 0
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
 		if strings.HasPrefix(line, "99COTAHIST") {
 			break
 		}
 		quote := common.ParseLineToDailyQuote(line)
-		fmt.Printf("-")
+		date := common.ParseDate(CutoffDate)
+		if quote.Date.Before(date) {
+			continue
+		}
 		quotesBuffer = append(quotesBuffer, quote)
 
 		if len(quotesBuffer) >= QuoteFileLoaderBufferSize {
 			fmt.Printf("Persisting batch of %d quotes...\n", QuoteFileLoaderBufferSize)
-			persistQuotes(client, quotesBuffer, org, bucket)
+			fmt.Printf("%s\n", quotesBuffer[len(quotesBuffer)-1].Date.Month())
+			err = db.PersistQuotes(quotesBuffer)
+			if err != nil {
+				panic(err)
+			}
+			batchCount++
 			totalQuotes += len(quotesBuffer)
+			fmt.Printf("Saved %d quotes. Total %d, sleeping %s...\n", len(quotesBuffer), totalQuotes, SLEEP)
+			time.Sleep(SLEEP)
 			quotesBuffer = []common.DailyQuote{}
-			fmt.Printf("\n")
 		}
 
 	}
-	client.Close()
+	if len(quotesBuffer) > 0 {
+		fmt.Printf("Persisting last batch of %d quotes...\n", len(quotesBuffer))
+		err = db.PersistQuotes(quotesBuffer)
+		if err != nil {
+			panic(err)
+		}
+		batchCount++
+		totalQuotes += len(quotesBuffer)
+		fmt.Printf("Saved %d quotes, Total %d, done\n", len(quotesBuffer), totalQuotes)
+	}
+	db.Close()
 	fmt.Printf("Loaded %d quotes\n", totalQuotes)
 	readFile.Close()
 }
 
-func persistQuotes(client influxdb2.Client, quotes []common.DailyQuote, org string, bucket string) error {
-	writeAPI := client.WriteAPIBlocking(org, bucket)
-	var points []*write.Point
-	for _, quote := range quotes {
-		point := common.DailyQuoteToInfluxPoint(quote)
-		points = append(points, point)
+func checkZip(path string) (string, error) {
+	if strings.HasSuffix(".zip", path) {
+		fmt.Printf("Zip file detected. Unzipping...\n")
+		newPath := strings.ReplaceAll(".zip", ".txt", strings.ToLower(path))
+		err := Unzip(path, newPath)
+		return newPath, err
 	}
-	fmt.Printf("Persisting %d points ...\n", len(points))
-	if err := writeAPI.WritePoint(context.Background(), points...); err != nil {
-		log.Fatal(err)
-	}
-
-	// Flush writes
-	writeAPI.Flush(context.Background())
-	return nil
+	return path, nil
 }
 
-func ConnectToInfluxDB() (influxdb2.Client, error) {
-	dbToken := os.Getenv("INFLUXDB_TOKEN")
-	if dbToken == "" {
-		return nil, errors.New("INFLUXDB_TOKEN must be set")
-	}
-
-	dbURL := os.Getenv("INFLUXDB_URL")
-	if dbURL == "" {
-		return nil, errors.New("INFLUXDB_URL must be set")
-	}
-	fmt.Printf("Connecting to influxdb at '%s' with token '%s'...\n", dbURL, dbToken)
-	client := influxdb2.NewClientWithOptions(
-		dbURL,
-		dbToken,
-		influxdb2.DefaultOptions().SetBatchSize(QuoteFileLoaderBufferSize),
-	)
-
-	// validate client connection health
-	check, err := client.Health(context.Background())
+func Unzip(src, dest string) error {
+	r, err := zip.OpenReader(src)
 	if err != nil {
-		fmt.Printf("ERROR CONNECTING TO INFLUXDB!!!!\n")
-		panic(err)
+		return err
 	}
-	fmt.Printf("Connection health: %s\n", check.Status)
-	return client, err
+	defer func() {
+		if err = r.Close(); err != nil {
+			panic(err)
+		}
+	}()
+
+	os.MkdirAll(dest, 0755)
+
+	// Closure to address file descriptors issue with all the deferred .Close() methods
+	extractAndWriteFile := func(f *zip.File) error {
+		var rc io.ReadCloser
+		rc, err = f.Open()
+		if err != nil {
+			return err
+		}
+		defer func() {
+			if err = rc.Close(); err != nil {
+				panic(err)
+			}
+		}()
+
+		path := filepath.Join(dest, f.Name)
+
+		// Check for ZipSlip (Directory traversal)
+		if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", path)
+		}
+
+		if f.FileInfo().IsDir() {
+			os.MkdirAll(path, f.Mode())
+		} else {
+			os.MkdirAll(filepath.Dir(path), f.Mode())
+
+			f, er := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
+			if er != nil {
+				return err
+			}
+			defer func() {
+				if er = f.Close(); er != nil {
+					panic(er)
+				}
+			}()
+
+			_, er = io.Copy(f, rc)
+			if er != nil {
+				return er
+			}
+		}
+		return nil
+	}
+
+	for _, f := range r.File {
+		err = extractAndWriteFile(f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -21,7 +21,7 @@ SHELL      := bash
 
 .PHONY: build run vet test
 
-run:
+run: build-loader
 	build/b3loader
 
 build-loader:
@@ -40,3 +40,6 @@ refresh:
 	git pull origin master && \
 	make build-docker && \
 	docker compose up -d --force-recreate b3loader
+
+compose-up:
+	docker compose up -d --force-recreate

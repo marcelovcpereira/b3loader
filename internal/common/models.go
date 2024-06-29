@@ -1,10 +1,12 @@
 package common
 
 import (
+	"fmt"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"math"
 	"math/big"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -64,14 +66,18 @@ func ParseMoney(str string) float64 {
 	return retVal
 }
 
+func Trim(val string) string {
+	return strings.TrimSpace(val)
+}
+
 func DailyQuoteToInfluxPoint(quote DailyQuote) *write.Point {
 	return influxdb2.NewPointWithMeasurement("daily_quote").
-		AddTag("StockName", quote.StockName).
+		AddTag("StockName", Trim(quote.StockName)).
 		AddField("Date", quote.Date).
 		AddField("BDICode", quote.BDICode).
-		AddField("StockName", quote.StockName).
+		AddField("StockName", Trim(quote.StockName)).
 		AddField("Market", quote.Market).
-		AddField("CompanyName", quote.CompanyName).
+		AddField("CompanyName", Trim(quote.CompanyName)).
 		AddField("StockType", quote.StockType).
 		AddField("PrazoMercadoTermo", quote.PrazoMercadoTermo).
 		AddField("Moeda", quote.Moeda).
@@ -165,4 +171,43 @@ func GrahamPrice(lpa float64, vpa float64) float64 {
 func BasinPrice(dpa float64) float64 {
 	taxaBasicaRemuneracaoRendaFixa := 0.06
 	return dpa / taxaBasicaRemuneracaoRendaFixa
+}
+
+type Config struct {
+	DirectoryPath string
+	InfluxURL     string
+	InfluxORG     string
+	InfluxBucket  string
+	InfluxToken   string
+}
+
+func LoadConfig() Config {
+	return Config{
+		DirectoryPath: os.Getenv("DIRECTORY_PATH"),
+		InfluxURL:     os.Getenv("INFLUXDB_URL"),
+		InfluxORG:     os.Getenv("INFLUXDB_ORG"),
+		InfluxBucket:  os.Getenv("INFLUXDB_BUCKET"),
+		InfluxToken:   os.Getenv("INFLUXDB_TOKEN"),
+	}
+}
+
+func (c Config) PrintConfig() {
+	fmt.Printf(
+		"Upload directory: %s\nInfluxdb:\n\tHost: %s\n\tOrg: %s\n\tBucket: %s\n\tToken: %s\n",
+		c.DirectoryPath,
+		c.InfluxURL,
+		c.InfluxORG,
+		c.InfluxBucket,
+		c.InfluxToken,
+	)
+}
+
+func (c Config) GetFilePath(name string) string {
+	return c.DirectoryPath + "/" + name
+}
+
+type QuoteDB interface {
+	Connect()
+	PersistQuotes(quotes []DailyQuote) error
+	Close()
 }
