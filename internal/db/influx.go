@@ -7,6 +7,7 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/marcelovcpereira/b3loader/internal/common"
+	"github.com/marcelovcpereira/b3loader/internal/util"
 	"time"
 )
 
@@ -30,7 +31,7 @@ func (db *InfluxQuoteDB) PersistQuotes(quotes []common.DailyQuote) error {
 	writeAPI := db.Client.WriteAPIBlocking(db.Config.InfluxORG, db.Config.InfluxBucket)
 	var points []*write.Point
 	for _, quote := range quotes {
-		point := common.DailyQuoteToInfluxPoint(quote)
+		point := util.DailyQuoteToInfluxPoint(quote)
 		points = append(points, point)
 	}
 	fmt.Printf("Persisting %d points ...\n", len(points))

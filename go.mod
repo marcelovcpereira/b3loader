@@ -2,7 +2,10 @@ module github.com/marcelovcpereira/b3loader
 
 go 1.22.4
 
-require github.com/influxdata/influxdb-client-go/v2 v2.13.0
+require (
+	github.com/gorilla/mux v1.8.1
+	github.com/influxdata/influxdb-client-go/v2 v2.13.0
+)
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
