@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const DefaultCutoffDate = "20180101"
+const DefaultCutoffDate = "200000101"
 const CutoffDate = DefaultCutoffDate
 const QuoteFileLoaderBufferSize = 7000
 const DefaultSleepSeconds = 4
@@ -33,22 +33,28 @@ func main() {
 	mux.HandleFunc("/quotes/load/{name}", func(w http.ResponseWriter, req *http.Request) {
 		start := time.Now()
 		filePath := config.GetFilePath(req.PathValue("name"))
-		fmt.Printf("New quote request for file %s\n", filePath)
+		fmt.Printf("New quote request accepted for file %s\n", filePath)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte("{\"status\":\"ok\", \"code\":202}"))
 		handleFile(db, filePath)
 		elapsed := time.Since(start)
 		log.Printf("file loaded in %s", elapsed)
 	})
-	fmt.Println("Waiting connections...")
-	log.Fatal(http.ListenAndServe(":8080", mux))
+	fmt.Printf("Waiting connections on port: %s...\n", config.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Port), mux))
 }
 
 func handleFile(db common.QuoteDB, filePath string) {
-	filePath, err := checkZip(filePath)
+	newPath, err := checkZip(filePath)
+	removeZip := false
+	if newPath != filePath {
+		removeZip = true
+	}
 	if err != nil {
 		fmt.Printf("ERROR EXTRACTING FILE: %v\n", err)
 		return
 	}
-	readFile, err := os.Open(filePath)
+	readFile, err := os.Open(newPath)
 	if err != nil {
 		fmt.Printf("ERROR OPENING FILE: %v\n", err)
 		return
@@ -102,13 +108,16 @@ func handleFile(db common.QuoteDB, filePath string) {
 	db.Close()
 	fmt.Printf("Loaded %d quotes\n", totalQuotes)
 	readFile.Close()
+	if removeZip {
+		os.Remove(newPath)
+	}
 }
 
 func checkZip(path string) (string, error) {
-	if strings.HasSuffix(".zip", path) {
+	if strings.HasSuffix(strings.ToLower(path), ".zip") {
 		fmt.Printf("Zip file detected. Unzipping...\n")
-		newPath := strings.ReplaceAll(".zip", ".txt", strings.ToLower(path))
-		err := Unzip(path, newPath)
+		newPath := strings.ReplaceAll(strings.ToLower(path), ".zip", ".txt")
+		err := Unzip(path, "data/b3loader-data/")
 		return newPath, err
 	}
 	return path, nil
@@ -125,12 +134,10 @@ func Unzip(src, dest string) error {
 		}
 	}()
 
-	os.MkdirAll(dest, 0755)
-
 	// Closure to address file descriptors issue with all the deferred .Close() methods
-	extractAndWriteFile := func(f *zip.File) error {
+	extractAndWriteFile := func(zipFile *zip.File) error {
 		var rc io.ReadCloser
-		rc, err = f.Open()
+		rc, err = zipFile.Open()
 		if err != nil {
 			return err
 		}
@@ -140,33 +147,30 @@ func Unzip(src, dest string) error {
 			}
 		}()
 
-		path := filepath.Join(dest, f.Name)
+		outputFilePath := filepath.Join(dest, zipFile.Name)
 
-		// Check for ZipSlip (Directory traversal)
-		if !strings.HasPrefix(path, filepath.Clean(dest)+string(os.PathSeparator)) {
-			return fmt.Errorf("illegal file path: %s", path)
+		if !strings.HasPrefix(outputFilePath, filepath.Clean(dest)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", outputFilePath)
 		}
 
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(path, f.Mode())
-		} else {
-			os.MkdirAll(filepath.Dir(path), f.Mode())
+		os.MkdirAll(filepath.Dir(outputFilePath), zipFile.Mode())
 
-			f, er := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, f.Mode())
-			if er != nil {
-				return err
-			}
-			defer func() {
-				if er = f.Close(); er != nil {
-					panic(er)
-				}
-			}()
-
-			_, er = io.Copy(f, rc)
-			if er != nil {
-				return er
-			}
+		outputFile, er := os.OpenFile(outputFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipFile.Mode())
+		if er != nil {
+			return err
 		}
+		defer func() {
+			if er = outputFile.Close(); er != nil {
+				panic(er)
+			}
+		}()
+
+		_, er = io.Copy(outputFile, rc)
+		outputFile.Sync()
+		if er != nil {
+			return er
+		}
+
 		return nil
 	}
 

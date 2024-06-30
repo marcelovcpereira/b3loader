@@ -78,8 +78,9 @@ func (db *InfluxQuoteDB) Connect() {
 	// validate client connection health
 	check, err := client.Health(context.Background())
 	if err != nil {
-		fmt.Printf("ERROR CONNECTING TO INFLUXDB!!!!\n")
-		panic(err)
+		fmt.Printf("ERROR CONNECTING TO INFLUXDB!!!!\nRetrying in 10s...\n")
+		time.Sleep(10 * time.Second)
+		db.Connect()
 	}
 	fmt.Printf("Connection health: %s\n", check.Status)
 	db.Client = client

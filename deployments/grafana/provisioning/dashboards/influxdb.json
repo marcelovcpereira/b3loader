@@ -4,13 +4,19 @@
       {
         "builtIn": 1,
         "datasource": {
-          "type": "grafana",
-          "uid": "-- Grafana --"
+          "type": "influxdb",
+          "uid": "P4B9130C347882A5D"
         },
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -24,7 +30,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "edq2lfm4udywwa"
+        "uid": "P4B9130C347882A5D"
       },
       "fieldConfig": {
         "defaults": {
@@ -106,7 +112,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "edq2lfm4udywwa"
+            "uid": "P4B9130C347882A5D"
           },
           "query": "from(bucket: \"quote_events\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"daily_quote\")\n  |> filter(fn: (r) => r[\"StockName\"] == \"BBAS3\")\n  |> filter(fn: (r) => r[\"_field\"] == \"LastPrice\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
@@ -118,7 +124,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "edq2lfm4udywwa"
+        "uid": "P4B9130C347882A5D"
       },
       "fieldConfig": {
         "defaults": {
@@ -200,7 +206,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "edq2lfm4udywwa"
+            "uid": "P4B9130C347882A5D"
           },
           "query": "from(bucket: \"quote_events\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"daily_quote\")\n  |> filter(fn: (r) => r[\"StockName\"] == \"KNCR11\")\n  |> filter(fn: (r) => r[\"_field\"] == \"LastPrice\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
@@ -212,7 +218,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "edq2lfm4udywwa"
+        "uid": "P4B9130C347882A5D"
       },
       "fieldConfig": {
         "defaults": {
@@ -294,13 +300,107 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "edq2lfm4udywwa"
+            "uid": "P4B9130C347882A5D"
           },
           "query": "from(bucket: \"quote_events\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"daily_quote\")\n  |> filter(fn: (r) => r[\"StockName\"] == \"XPLG11\")\n  |> filter(fn: (r) => r[\"_field\"] == \"LastPrice\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
           "refId": "A"
         }
       ],
       "title": "XPLG11",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P4B9130C347882A5D"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "series",
+            "axisGridShow": true,
+            "axisLabel": "Price",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": true,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyBRL"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P4B9130C347882A5D"
+          },
+          "query": "from(bucket: \"quote_events\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"daily_quote\")\n  |> filter(fn: (r) => r[\"StockName\"] == \"TAEE11\")\n  |> filter(fn: (r) => r[\"_field\"] == \"LastPrice\")\n  |> aggregateWindow(every: v.windowPeriod, fn: last, createEmpty: false)\n  |> yield(name: \"last\")",
+          "refId": "A"
+        }
+      ],
+      "title": "TAEE11",
       "type": "timeseries"
     }
   ],
@@ -316,8 +416,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Stock Value",
+  "title": "B3 Stock Value",
   "uid": "adq86yv7qps00c",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

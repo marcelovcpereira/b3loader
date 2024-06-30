@@ -1,12 +1,12 @@
 apiVersion: 1
 
 datasources:
-  - name: InfluxDB
+  - name: B3Quotes
     type: influxdb
     access: proxy
-    url: http://influxdb:8086
+    url: ${INFLUXDB_URL}
     secureJsonData:
-      token: MjeRP2L8aC8zlV-zc5nVCCV7UT0p5mBzMZUR71fSRNZ3eZF1bvGOYzI6TLdSYclIt8hRC1fRp-3NC-695758JQ==
+      token: ${INFLUXDB_TOKEN}
     jsonData:
       version: Flux
       organization: b3loader

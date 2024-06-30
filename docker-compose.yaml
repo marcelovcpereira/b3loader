@@ -1,33 +1,39 @@
 services:
   b3loader:
-    image: b3loader
+    build:
+      dockerfile: build/Dockerfile
     container_name: b3loader
     environment:
-      INFLUXDB_TOKEN: "influxdb"
-      INFLUXDB_URL: "http://influxdb:8086"
-      INFLUXDB_ORG: "b3loader"
-      INFLUXDB_BUCKET: "quote_events"
-      ENVIRONMENT: "dev"
-      DIRECTORY_PATH: "/mnt/data"
+      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+      INFLUXDB_URL: ${INFLUXDB_URL}
+      INFLUXDB_ORG: ${INFLUXDB_ORG}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+      ENVIRONMENT: ${ENVIRONMENT}
+      DIRECTORY_PATH: ${B3LOAD_DIRECTORY_PATH}
+      B3LOADER_PORT: ${B3LOADER_PORT}
     volumes:
-      - ./data/b3loader-data:/mnt/data
+      - ./data/b3loader-data:${B3LOAD_DIRECTORY_PATH}
     ports:
-      - "8080:8080"
+      - "${B3LOADER_PORT}:${B3LOADER_PORT}"
+    env_file:
+      - path: ./.env
   influxdb:
     image: influxdb
     container_name: influxdb
     restart: always
     environment:
       DOCKER_INFLUXDB_INIT_MODE: "setup"
-      DOCKER_INFLUXDB_INIT_USERNAME: "influxdb"
-      DOCKER_INFLUXDB_INIT_PASSWORD: "influxdb"
-      DOCKER_INFLUXDB_INIT_ORG: "b3loader"
-      DOCKER_INFLUXDB_INIT_BUCKET: "quote_events"
-      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: "influxdb"
+      DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER}
+      DOCKER_INFLUXDB_INIT_PASSWORD: ${INFLUXDB_PASSWORD}
+      DOCKER_INFLUXDB_INIT_ORG: ${INFLUXDB_ORG}
+      DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_TOKEN}
     ports:
-      - "8086:8086"
+      - "${INFLUXDB_PORT}:${INFLUXDB_PORT}"
     volumes:
       - ./data/influxdb-data:/var/lib/influxdb2
+    env_file:
+      - path: ./.env
   grafana:
     image: grafana/grafana-enterprise
     container_name: grafana
@@ -35,10 +41,13 @@ services:
     depends_on:
       - influxdb
     ports:
-      - 3000:3000
+      - ${GRAFANA_PORT}:${GRAFANA_PORT}
     volumes:
-      - ./data/grafana-data:/var/lib/grafana
-      - ./deployments/grafana:/etc/grafana:ro
+      - ./data/grafana-data:/var/lib/grafana:rw
+      - ./deployments/grafana/provisioning:/etc/grafana/provisioning
     environment:
-      - GF_SECURITY_ADMIN_USER=grafana
-      - GF_SECURITY_ADMIN_PASSWORD=grafana
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=${GRAFANA_HOME_DASHBOARD}
+    env_file:
+      - path: ./.env

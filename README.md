@@ -6,7 +6,7 @@ Composed of 3 parts:
 
 - `B3loader`: Golang project that loads backup files, parses and persists the data on a Influx database
 
-- `InfluxDB`: Event database that stores all brazilian stock information chronologically
+- `InfluxDB`: Event database that stores stock information
 
 - `Grafana`: Visualization tool that provides a dashboard for visualizing the data in the database
 
@@ -20,6 +20,8 @@ Clone this repository:
 ```bash
 git clone https://github.com/marcelovcpereira/b3loader.git
 ```
+
+Review the contents of `example.env` file and copy it to `.env` 
 
 Run:
 ```bash
@@ -35,7 +37,7 @@ The endpoint is:
 
 `http://localhost:8080/quotes/load/{filename}`
 
-Where `filename` should be the name of a valid B3 Backup file located at `./data/b3loader-data`
+Where `filename` should be the name of a valid B3 Backup file located at `{THIS_PROJECT_PATH}/data/b3loader-data`
 
 
 ## Downloading the data directly from B3
@@ -43,11 +45,11 @@ Where `filename` should be the name of a valid B3 Backup file located at `./data
 B3 website provides a form for downloading historical data [here](https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/historico/mercado-a-vista/series-historicas/).
 You can download the data yearly and the file name will be in the format:
 ```bash
-COTAHIST_A{ANO}.ZIP
+COTAHIST_A{YEAR}.ZIP
 ```
 For example, the file with data from all 2023 year is:
 ```bash
-COTAHIST_A2023.TXT
+COTAHIST_A2023.ZIP
 ```
 
 B3 provides files with data from 1986 until now.

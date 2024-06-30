@@ -179,6 +179,7 @@ type Config struct {
 	InfluxORG     string
 	InfluxBucket  string
 	InfluxToken   string
+	Port          string
 }
 
 func LoadConfig() Config {
@@ -188,6 +189,7 @@ func LoadConfig() Config {
 		InfluxORG:     os.Getenv("INFLUXDB_ORG"),
 		InfluxBucket:  os.Getenv("INFLUXDB_BUCKET"),
 		InfluxToken:   os.Getenv("INFLUXDB_TOKEN"),
+		Port:          os.Getenv("B3LOADER_PORT"),
 	}
 }
 
