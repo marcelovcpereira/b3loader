@@ -42,4 +42,5 @@ refresh:
 	docker compose up -d --force-recreate b3loader
 
 compose-up:
-	docker compose up -d --force-recreate --build b3loader
+	docker compose up -d --force-recreate b3loader influxdb grafana --build b3loader
+	python3 -m webbrowser http://localhost:3000

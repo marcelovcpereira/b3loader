@@ -25,8 +25,13 @@ Review the contents of `example.env` file and copy it to `.env`
 
 Run:
 ```shell
+make compose-up
+```
+Or
+```shell
 docker compose up -d --force-recreate
 ```
+in case you dont have python3 installed or even Make
 
 This will run the 3 apps, but with NO DATA.
 
