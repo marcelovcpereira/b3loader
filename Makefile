@@ -42,4 +42,4 @@ refresh:
 	docker compose up -d --force-recreate b3loader
 
 compose-up:
-	docker compose up -d --force-recreate
+	docker compose up -d --force-recreate --build b3loader

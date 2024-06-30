@@ -81,3 +81,5 @@ Example of Goland `Environment` configuration for running locally in IDE:
 ```shell
 B3LOADER_PORT=8080;B3LOADER_DIRECTORY_PATH=data/b3loader-data;ENVIRONMENT=dev;INFLUXDB_BUCKET=quote_events;INFLUXDB_ORG=b3loader;INFLUXDB_TOKEN=influxdb;INFLUXDB_URL=http://localhost:8086
 ```
+
+![alt text](https://github.com/marcelovcpereira/b3loader/blob/master/grafana.png?raw=true)

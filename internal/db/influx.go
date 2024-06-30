@@ -28,26 +28,24 @@ func NewInfluxQuoteDB(config common.Config, buffer int) *InfluxQuoteDB {
 }
 
 func (db *InfluxQuoteDB) PersistQuotes(quotes []common.DailyQuote) error {
-	writeAPI := db.Client.WriteAPIBlocking(db.Config.InfluxORG, db.Config.InfluxBucket)
 	var points []*write.Point
 	for _, quote := range quotes {
 		point := util.DailyQuoteToInfluxPoint(quote)
 		points = append(points, point)
 	}
 	fmt.Printf("Persisting %d points ...\n", len(points))
-	err := db.retryableWritePoint(4, points)
+	err := db.retryableWritePoints(4, points)
 	if err != nil {
 		return err
 	}
 
-	// Flush writes
-	writeAPI.Flush(context.Background())
 	return nil
 }
 
-func (db *InfluxQuoteDB) retryableWritePoint(attempts int, points []*write.Point) error {
+func (db *InfluxQuoteDB) retryableWritePoints(attempts int, points []*write.Point) error {
 	currentAttempt := 1
 	writeAPI := db.Client.WriteAPIBlocking(db.Config.InfluxORG, db.Config.InfluxBucket)
+	defer writeAPI.Flush(context.Background())
 	backOff := 30
 	for currentAttempt <= attempts {
 		err := writeAPI.WritePoint(context.Background(), points...)
@@ -60,7 +58,6 @@ func (db *InfluxQuoteDB) retryableWritePoint(attempts int, points []*write.Point
 		}
 		return nil
 	}
-
 	return errors.New(fmt.Sprintf("!Total attempts exceeded...\nEXITING\n"))
 }
 
