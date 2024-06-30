@@ -75,13 +75,14 @@ func (c Config) SetDefaultSleepSeconds(sleep int) {
 
 func (c Config) PrintConfig() {
 	fmt.Printf(
-		"Upload directory: %s\nInfluxdb:\n\tHost: %s\n\tOrg: %s\n\tBucket: %s\n\tToken: %s\n",
+		"Config: Upload directory: %s\nInfluxdb:\n\tHost: %s\n\tOrg: %s\n\tBucket: %s\n\tToken: %s\n",
 		c.DirectoryPath,
 		c.InfluxURL,
 		c.InfluxORG,
 		c.InfluxBucket,
 		c.InfluxToken,
 	)
+	fmt.Printf("Config: running at %.1f quotes per second (qps)\n", float64(c.QuoteFileLoaderBufferSize/c.DefaultSleepSeconds))
 }
 
 func (c Config) GetFilePath(name string) string {

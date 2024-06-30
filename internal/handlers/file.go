@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+const QuoteFilePrefix = "99COTAHIST"
+
 type Handler struct {
 	Config common.Config
 	DB     common.QuoteDB
@@ -28,70 +30,75 @@ func NewHandler(config common.Config, db common.QuoteDB) *Handler {
 
 func (h *Handler) HandleFile(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
-	filePath := h.Config.GetFilePath(req.PathValue("name"))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte("{\"status\":\"ok\", \"code\":202}"))
-	h.handleFile(h.DB, filePath)
+
+	h.processFile(h.DB, req.PathValue("name"))
+
 	elapsed := time.Since(start)
 	fmt.Printf("Handler: file loaded in %s", elapsed)
 }
 
-func (h *Handler) handleFile(db common.QuoteDB, filePath string) {
+func (h *Handler) processFile(db common.QuoteDB, fileName string) {
+	filePath := h.Config.GetFilePath(fileName)
 	newPath, err := h.checkZip(filePath)
 	if err != nil {
-		fmt.Printf("ERROR EXTRACTING FILE: %v\n", err)
+		fmt.Printf("Handler: ERROR EXTRACTING FILE: %v\n", err)
 		return
 	}
 	readFile, err := os.Open(newPath)
 	if err != nil {
-		fmt.Printf("ERROR OPENING FILE: %v\n", err)
+		fmt.Printf("Handler: ERROR OPENING FILE: %v\n", err)
 		return
 	}
 	fileScanner := bufio.NewScanner(readFile)
 	fileScanner.Split(bufio.ScanLines)
-	fileScanner.Scan()
+
+	if !fileScanner.Scan() {
+		fmt.Printf("Handler: ERROR SCANNING FILE: %v\n", fileScanner.Err())
+		return
+	}
 	firstLine := fileScanner.Text()
-	fmt.Printf("File information: %s\n", firstLine)
+	fmt.Printf("Handler: File information: %s\n", firstLine)
 
 	var quotesBuffer []common.DailyQuote
 	totalQuotes := 0
 	batchCount := 0
+	cutoffDate := util.ParseDate(h.Config.CutoffDate)
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
-		if strings.HasPrefix(line, "99COTAHIST") {
+		if strings.HasPrefix(line, QuoteFilePrefix) {
 			break
 		}
 		quote := util.ParseLineToDailyQuote(line)
-		date := util.ParseDate(h.Config.CutoffDate)
-		if quote.Date.Before(date) {
+		// Do not persist quotes before the Cutoff date
+		if quote.Date.Before(cutoffDate) {
 			continue
 		}
 		quotesBuffer = append(quotesBuffer, quote)
 
 		if len(quotesBuffer) >= h.Config.QuoteFileLoaderBufferSize {
-			fmt.Printf("Persisting batch of %d quotes...\n", h.Config.QuoteFileLoaderBufferSize)
-			fmt.Printf("%s\n", quotesBuffer[len(quotesBuffer)-1].Date.Month())
 			err = db.PersistQuotes(quotesBuffer)
 			if err != nil {
 				panic(err)
 			}
 			batchCount++
 			totalQuotes += len(quotesBuffer)
-			fmt.Printf("Saved %d quotes. Total %d, sleeping %ds...\n", len(quotesBuffer), totalQuotes, h.Config.DefaultSleepSeconds)
+			fmt.Printf("Handler: Batch #%d: Saved %d quotes. Total %d, sleeping %ds...\n", batchCount, len(quotesBuffer), totalQuotes, h.Config.DefaultSleepSeconds)
 			time.Sleep(time.Duration(h.Config.DefaultSleepSeconds) * time.Second)
 			quotesBuffer = []common.DailyQuote{}
 		}
 
 	}
 	if len(quotesBuffer) > 0 {
-		fmt.Printf("Persisting last batch of %d quotes...\n", len(quotesBuffer))
 		err = db.PersistQuotes(quotesBuffer)
 		if err != nil {
 			panic(err)
 		}
 		batchCount++
 		totalQuotes += len(quotesBuffer)
-		fmt.Printf("Saved %d quotes, Total %d, done\n", len(quotesBuffer), totalQuotes)
+		fmt.Printf("Handler: Batch #%d: Saved %d quotes. Total %d, sleeping %ds...\n", batchCount, len(quotesBuffer), totalQuotes, h.Config.DefaultSleepSeconds)
+		quotesBuffer = []common.DailyQuote{}
 	}
 	db.Close()
 	fmt.Printf("Loaded %d quotes\n", totalQuotes)
@@ -103,7 +110,7 @@ func (h *Handler) handleFile(db common.QuoteDB, filePath string) {
 
 func (h *Handler) checkZip(path string) (string, error) {
 	if strings.HasSuffix(strings.ToLower(path), ".zip") {
-		fmt.Printf("Zip file detected. Unzipping...\n")
+		fmt.Printf("Handler: Zip file detected. Unzipping...\n")
 		newPath := strings.ReplaceAll(strings.ToLower(path), ".zip", ".txt")
 		err := h.unzip(path, h.Config.DirectoryPath)
 		return newPath, err
@@ -132,7 +139,6 @@ func (h *Handler) unzip(src, dest string) error {
 	return nil
 }
 
-// Closure to address file descriptors issue with all the deferred .Close() methods
 func (h *Handler) extractAndWriteFile(zipFile *zip.File, dest string) error {
 	rc, err := zipFile.Open()
 	if err != nil {
@@ -146,7 +152,7 @@ func (h *Handler) extractAndWriteFile(zipFile *zip.File, dest string) error {
 
 	outputFilePath := filepath.Join(dest, zipFile.Name)
 	if !strings.HasPrefix(outputFilePath, filepath.Clean(dest)+string(os.PathSeparator)) {
-		return fmt.Errorf("illegal file path: %s", outputFilePath)
+		return fmt.Errorf("handler: illegal file path: %s", outputFilePath)
 	}
 
 	os.MkdirAll(filepath.Dir(outputFilePath), zipFile.Mode())

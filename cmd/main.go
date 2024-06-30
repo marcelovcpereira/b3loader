@@ -23,12 +23,12 @@ func main() {
 	config.SetCutoffDate(DefaultCutoffDate)
 	config.SetQuoteFileLoaderBufferSize(DefaultQuoteFileLoaderBufferSize)
 	config.SetDefaultSleepSeconds(DefaultSleepSeconds)
-
-	fmt.Printf("Configured to run at %.1f quotes/s\n", float64(DefaultQuoteFileLoaderBufferSize/DefaultSleepSeconds))
 	config.PrintConfig()
+
 	db := db2.NewInfluxQuoteDB(config, DefaultQuoteFileLoaderBufferSize)
-	mux := http.NewServeMux()
 	handler := handlers.NewHandler(config, db)
+
+	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/quotes/file/{name}/load", handler.HandleFile)
 	fmt.Printf("Waiting connections on port: %s...\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Port), mux))

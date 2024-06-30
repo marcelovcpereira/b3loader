@@ -11,6 +11,10 @@ import (
 	"time"
 )
 
+const DefaultRetryAttempts = 5
+const DefaultBackoffIntervalSeconds = 30
+const DefaultBackoffFactor = 1.4
+
 type InfluxQuoteDB struct {
 	Client     influxdb2.Client
 	Config     common.Config
@@ -28,42 +32,39 @@ func NewInfluxQuoteDB(config common.Config, buffer int) *InfluxQuoteDB {
 }
 
 func (db *InfluxQuoteDB) PersistQuotes(quotes []common.DailyQuote) error {
-	var points []*write.Point
-	for _, quote := range quotes {
-		point := util.DailyQuoteToInfluxPoint(quote)
-		points = append(points, point)
-	}
-	fmt.Printf("Persisting %d points ...\n", len(points))
-	err := db.retryableWritePoints(4, points)
+	fmt.Printf("DB: Converting batch of %d quotes to Influx points...\n", db.Config.QuoteFileLoaderBufferSize)
+	fmt.Printf("DB: %s\n", quotes[len(quotes)-1].Date.Month())
+	points := util.DailyQuotesToInfluxPoints(quotes)
+	fmt.Printf("DB: Persisting %d points ...\n", len(points))
+	err := db.RetryableWritePoints(DefaultRetryAttempts, points)
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
-func (db *InfluxQuoteDB) retryableWritePoints(attempts int, points []*write.Point) error {
+func (db *InfluxQuoteDB) RetryableWritePoints(attempts int, points []*write.Point) error {
 	currentAttempt := 1
 	writeAPI := db.Client.WriteAPIBlocking(db.Config.InfluxORG, db.Config.InfluxBucket)
 	defer writeAPI.Flush(context.Background())
-	backOff := 30
+	backOff := DefaultBackoffIntervalSeconds
 	for currentAttempt <= attempts {
 		err := writeAPI.WritePoint(context.Background(), points...)
 		if err != nil {
-			fmt.Printf("!%d Error writing quotes batch: %+v\nSleeping %d\n", currentAttempt, err, backOff)
+			fmt.Printf("DB: !%d Error writing quotes batch: %+v\nSleeping %d\n", currentAttempt, err, backOff)
 			time.Sleep(time.Duration(backOff) * time.Second)
 			currentAttempt++
-			backOff = int(float64(backOff) * 1.4)
+			backOff = int(float64(backOff) * DefaultBackoffFactor)
 			continue
 		}
 		return nil
 	}
-	return errors.New(fmt.Sprintf("!Total attempts exceeded...\nEXITING\n"))
+	return errors.New(fmt.Sprintf("DB: !Total attempts exceeded...\nEXITING\n"))
 }
 
 func (db *InfluxQuoteDB) Connect() {
 	fmt.Printf(
-		"Connecting to influxdb at '%s' with token '%s'...\n",
+		"DB: Connecting to influxdb at '%s' with token '%s'...\n",
 		db.Config.InfluxURL,
 		db.Config.InfluxToken,
 	)
@@ -76,11 +77,11 @@ func (db *InfluxQuoteDB) Connect() {
 	// validate client connection health
 	check, err := client.Health(context.Background())
 	if err != nil {
-		fmt.Printf("ERROR CONNECTING TO INFLUXDB!!!!\nRetrying in 10s...\n")
+		fmt.Printf("DB: ERROR CONNECTING TO INFLUXDB!!!!\nRetrying in 10s...\n")
 		time.Sleep(10 * time.Second)
 		db.Connect()
 	}
-	fmt.Printf("Connection health: %s\n", check.Status)
+	fmt.Printf("DB: Connection health: %s\n", check.Status)
 	db.Client = client
 }
 

@@ -96,6 +96,15 @@ func ParseLineToDailyQuote(line string) common.DailyQuote {
 	}
 }
 
+func DailyQuotesToInfluxPoints(quotes []common.DailyQuote) []*write.Point {
+	var points []*write.Point
+	for _, quote := range quotes {
+		point := DailyQuoteToInfluxPoint(quote)
+		points = append(points, point)
+	}
+	return points
+}
+
 func DailyQuoteToInfluxPoint(quote common.DailyQuote) *write.Point {
 	return influxdb2.NewPointWithMeasurement("daily_quote").
 		AddTag("StockName", Trim(quote.StockName)).
