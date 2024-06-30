@@ -6,7 +6,7 @@ datasources:
     access: proxy
     url: ${INFLUXDB_URL}
     secureJsonData:
-      token: ${INFLUXDB_TOKEN}
+      token: ${INFLUXDB_ADMIN_TOKEN}
     jsonData:
       version: Flux
       organization: b3loader

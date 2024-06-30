@@ -63,25 +63,32 @@ func (db *InfluxQuoteDB) RetryableWritePoints(attempts int, points []*write.Poin
 }
 
 func (db *InfluxQuoteDB) Connect() {
-	fmt.Printf(
-		"DB: Connecting to influxdb at '%s' with token '%s'...\n",
-		db.Config.InfluxURL,
-		db.Config.InfluxToken,
-	)
-	client := influxdb2.NewClientWithOptions(
-		db.Config.InfluxURL,
-		db.Config.InfluxToken,
-		influxdb2.DefaultOptions().SetBatchSize(uint(db.BufferSize)),
-	)
+	connected := false
+	var client influxdb2.Client
+	attempts := 0
+	for !connected && attempts < DefaultRetryAttempts {
+		fmt.Printf(
+			"DB: Trying to connect to influxdb at '%s' with token '%s'...\n",
+			db.Config.InfluxURL,
+			db.Config.InfluxToken,
+		)
+		client = influxdb2.NewClientWithOptions(
+			db.Config.InfluxURL,
+			db.Config.InfluxToken,
+			influxdb2.DefaultOptions().SetBatchSize(uint(db.BufferSize)),
+		)
+		check, err := client.Health(context.Background())
+		if err != nil {
+			fmt.Printf("DB: ERROR CONNECTING TO INFLUXDB: %v!!!!\nRetrying in %ds...\n", err, DefaultBackoffIntervalSeconds)
+			attempts++
+			time.Sleep(DefaultBackoffIntervalSeconds * time.Second)
+		} else {
+			fmt.Printf("DB: Connection health: %s\n", check.Status)
+			connected = true
+		}
 
-	// validate client connection health
-	check, err := client.Health(context.Background())
-	if err != nil {
-		fmt.Printf("DB: ERROR CONNECTING TO INFLUXDB!!!!\nRetrying in 10s...\n")
-		time.Sleep(10 * time.Second)
-		db.Connect()
 	}
-	fmt.Printf("DB: Connection health: %s\n", check.Status)
+
 	db.Client = client
 }
 

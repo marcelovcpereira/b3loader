@@ -1,22 +1,4 @@
 services:
-  b3loader:
-    build:
-      dockerfile: build/Dockerfile
-    container_name: b3loader
-    environment:
-      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
-      INFLUXDB_URL: ${INFLUXDB_URL}
-      INFLUXDB_ORG: ${INFLUXDB_ORG}
-      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
-      ENVIRONMENT: ${ENVIRONMENT}
-      DIRECTORY_PATH: ${B3LOADER_DIRECTORY_PATH}
-      B3LOADER_PORT: ${B3LOADER_PORT}
-    volumes:
-      - ./data/b3loader-data:${B3LOADER_DIRECTORY_PATH}
-    ports:
-      - "${B3LOADER_PORT}:${B3LOADER_PORT}"
-    env_file:
-      - path: ./.env
   influxdb:
     image: influxdb
     container_name: influxdb
@@ -49,5 +31,25 @@ services:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
       - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=${GRAFANA_HOME_DASHBOARD}
+    env_file:
+      - path: ./.env
+  b3loader:
+    build:
+      dockerfile: build/Dockerfile
+    container_name: b3loader
+    depends_on:
+      - influxdb
+    environment:
+      INFLUXDB_TOKEN: ${INFLUXDB_ADMIN_TOKEN}
+      INFLUXDB_URL: ${INFLUXDB_URL}
+      INFLUXDB_ORG: ${INFLUXDB_ORG}
+      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+      ENVIRONMENT: ${ENVIRONMENT}
+      DIRECTORY_PATH: ${B3LOADER_DIRECTORY_PATH}
+      B3LOADER_PORT: ${B3LOADER_PORT}
+    volumes:
+      - ./data/b3loader-data:${B3LOADER_DIRECTORY_PATH}
+    ports:
+      - "${B3LOADER_PORT}:${B3LOADER_PORT}"
     env_file:
       - path: ./.env

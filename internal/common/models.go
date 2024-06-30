@@ -53,7 +53,7 @@ func LoadConfig() Config {
 		InfluxURL:                 os.Getenv("INFLUXDB_URL"),
 		InfluxORG:                 os.Getenv("INFLUXDB_ORG"),
 		InfluxBucket:              os.Getenv("INFLUXDB_BUCKET"),
-		InfluxToken:               os.Getenv("INFLUXDB_TOKEN"),
+		InfluxToken:               os.Getenv("INFLUXDB_ADMIN_TOKEN"),
 		Port:                      os.Getenv("B3LOADER_PORT"),
 		CutoffDate:                "19800101",
 		QuoteFileLoaderBufferSize: 7000,
