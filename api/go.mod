@@ -1,4 +1,4 @@
-module github.com/marcelovcpereira/b3loader
+module github.com/marcelovcpereira/b3loader/api
 
 go 1.22.4
 

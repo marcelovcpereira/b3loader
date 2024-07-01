@@ -6,8 +6,8 @@ import (
 	"fmt"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
-	"github.com/marcelovcpereira/b3loader/internal/common"
-	"github.com/marcelovcpereira/b3loader/internal/util"
+	"github.com/marcelovcpereira/b3loader/api/internal/common"
+	"github.com/marcelovcpereira/b3loader/api/internal/util"
 	"time"
 )
 

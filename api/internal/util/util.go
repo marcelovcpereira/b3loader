@@ -3,7 +3,7 @@ package util
 import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
-	"github.com/marcelovcpereira/b3loader/internal/common"
+	"github.com/marcelovcpereira/b3loader/api/internal/common"
 	"math"
 	"math/big"
 	"strconv"

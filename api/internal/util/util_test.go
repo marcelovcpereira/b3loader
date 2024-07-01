@@ -2,7 +2,7 @@ package util_test
 
 import (
 	"fmt"
-	"github.com/marcelovcpereira/b3loader/internal/util"
+	"github.com/marcelovcpereira/b3loader/api/internal/util"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

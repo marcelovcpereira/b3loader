@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/marcelovcpereira/b3loader/internal/common"
-	db2 "github.com/marcelovcpereira/b3loader/internal/db"
-	"github.com/marcelovcpereira/b3loader/internal/handlers"
+	"github.com/marcelovcpereira/b3loader/api/internal/common"
+	db2 "github.com/marcelovcpereira/b3loader/api/internal/db"
+	"github.com/marcelovcpereira/b3loader/api/internal/handlers"
 	"log"
 	"net/http"
 )
@@ -12,7 +12,7 @@ import (
 const (
 	DefaultCutoffDate                = "20180101"
 	DefaultQuoteFileLoaderBufferSize = 7000
-	DefaultSleepSeconds              = 4
+	DefaultSleepSeconds              = 2
 )
 
 func main() {

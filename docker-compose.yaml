@@ -35,7 +35,7 @@ services:
       - path: ./.env
   b3loader:
     build:
-      dockerfile: build/Dockerfile
+      dockerfile: api/build/Dockerfile
     container_name: b3loader
     depends_on:
       - influxdb

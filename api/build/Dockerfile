@@ -11,7 +11,7 @@ RUN make build-loader
 # Final
 FROM scratch
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /app/build/b3loader /
+COPY --from=builder /app/api/build/b3loader /
 
 EXPOSE 8080
 ENTRYPOINT ["./b3loader"]

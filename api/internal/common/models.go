@@ -57,7 +57,7 @@ func LoadConfig() Config {
 		Port:                      os.Getenv("B3LOADER_PORT"),
 		CutoffDate:                "19800101",
 		QuoteFileLoaderBufferSize: 7000,
-		DefaultSleepSeconds:       4,
+		DefaultSleepSeconds:       2,
 	}
 }
 

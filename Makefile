@@ -25,21 +25,25 @@ run: build-loader
 	build/b3loader
 
 build-loader:
-	$(GOBUILD) -o build/b3loader -v github.com/marcelovcpereira/b3loader/cmd
+	cd ./api && \
+	$(GOBUILD) -o build/b3loader -v github.com/marcelovcpereira/b3loader/api/cmd
 
 build-docker:
+	cd ./api && \
 	docker build -t b3loader:latest -f build/Dockerfile .
 
 govet:
+	cd ./api && \
 	$(GOVET) ./...
 
 test:
+	cd ./api && \
 	$(GOTEST) -cover ./...
 
 refresh:
 	git pull origin master && \
 	make build-docker && \
-	docker compose up -d --force-recreate b3loader
+	compose-up
 
 compose-up:
 	docker compose up -d --force-recreate b3loader influxdb grafana --build b3loader
