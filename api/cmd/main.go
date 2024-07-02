@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/marcelovcpereira/b3loader/api/internal/common"
 	db2 "github.com/marcelovcpereira/b3loader/api/internal/db"
 	"github.com/marcelovcpereira/b3loader/api/internal/handlers"
-	"log"
-	"net/http"
 )
 
 const (
@@ -30,6 +31,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/quotes/file/{name}/load", handler.HandleFile)
+	mux.HandleFunc("/api/v1/quotes/{stockName}", handler.HandleGet)
 	fmt.Printf("Waiting API connections on port: %s...\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Port), mux))
 }

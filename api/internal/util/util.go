@@ -105,6 +105,23 @@ func DailyQuotesToInfluxPoints(quotes []common.DailyQuote) []*write.Point {
 	return points
 }
 
+func DailyQuotesToStockValues(quotes []common.DailyQuote) []common.StockValue {
+	var stocks []common.StockValue
+	for _, quote := range quotes {
+		point := DailyQuoteToStockValue(quote)
+		stocks = append(stocks, point)
+	}
+	return stocks
+}
+
+func DailyQuoteToStockValue(quote common.DailyQuote) common.StockValue {
+	return common.StockValue{
+		Date:  quote.Date,
+		Value: quote.LastPrice,
+	}
+
+}
+
 func DailyQuoteToInfluxPoint(quote common.DailyQuote) *write.Point {
 	return influxdb2.NewPointWithMeasurement("daily_quote").
 		AddTag("StockName", Trim(quote.StockName)).

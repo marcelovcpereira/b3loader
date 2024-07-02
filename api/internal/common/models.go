@@ -92,5 +92,11 @@ func (c Config) GetFilePath(name string) string {
 type QuoteDB interface {
 	Connect()
 	PersistQuotes(quotes []DailyQuote) error
+	GetStockValues(stockName string) []StockValue
 	Close()
+}
+
+type StockValue struct {
+	Date  time.Time
+	Value float64
 }

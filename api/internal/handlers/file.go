@@ -3,15 +3,17 @@ package handlers
 import (
 	"archive/zip"
 	"bufio"
+	"encoding/json"
 	"fmt"
-	"github.com/marcelovcpereira/b3loader/api/internal/common"
-	"github.com/marcelovcpereira/b3loader/api/internal/util"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/marcelovcpereira/b3loader/api/internal/common"
+	"github.com/marcelovcpereira/b3loader/api/internal/util"
 )
 
 const QuoteFilePrefix = "99COTAHIST"
@@ -33,13 +35,38 @@ func (h *Handler) HandleFile(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte("{\"status\":\"ok\", \"code\":202}"))
 
-	h.processFile(h.DB, req.PathValue("name"))
+	h.processFile(req.PathValue("name"))
 
 	elapsed := time.Since(start)
 	fmt.Printf("Handler: file loaded in %s", elapsed)
 }
 
-func (h *Handler) processFile(db common.QuoteDB, fileName string) {
+func (h *Handler) HandleGet(w http.ResponseWriter, req *http.Request) {
+	okResponse := "{\"status\":\"ok\", \"code\":200, \"data\": %s}"
+	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": %s}"
+	start := time.Now()
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+
+	stock := req.PathValue("stockName")
+
+	stocks := h.DB.GetStockValues(stock)
+	fmt.Printf("Handler: Found %d stocks for %s. Converting...\n", len(stocks), stock)
+	fmt.Printf("Handler: Marshalling to json %d stocks...\n", len(stocks))
+	ret, err := json.Marshal(stocks)
+	if err != nil {
+		fmt.Printf("Handler: error marshalling stocks:%v\n", err)
+		w.Write([]byte(fmt.Sprintf(errorResponse, err.Error())))
+		return
+	}
+	response := fmt.Sprintf(okResponse, ret)
+	fmt.Printf("Handler: Returning %v\n", response)
+	w.Write([]byte(response))
+	elapsed := time.Since(start)
+	fmt.Printf("Handler: quotes returned in %s", elapsed)
+}
+
+func (h *Handler) processFile(fileName string) {
 	filePath := h.Config.GetFilePath(fileName)
 	newPath, err := h.checkZip(filePath)
 	if err != nil {
@@ -78,7 +105,7 @@ func (h *Handler) processFile(db common.QuoteDB, fileName string) {
 		quotesBuffer = append(quotesBuffer, quote)
 
 		if len(quotesBuffer) >= h.Config.QuoteFileLoaderBufferSize {
-			err = db.PersistQuotes(quotesBuffer)
+			err = h.DB.PersistQuotes(quotesBuffer)
 			if err != nil {
 				panic(err)
 			}
@@ -91,7 +118,7 @@ func (h *Handler) processFile(db common.QuoteDB, fileName string) {
 
 	}
 	if len(quotesBuffer) > 0 {
-		err = db.PersistQuotes(quotesBuffer)
+		err = h.DB.PersistQuotes(quotesBuffer)
 		if err != nil {
 			panic(err)
 		}
@@ -100,7 +127,7 @@ func (h *Handler) processFile(db common.QuoteDB, fileName string) {
 		fmt.Printf("Handler: Batch #%d: Saved %d quotes. Total %d, sleeping %ds...\n", batchCount, len(quotesBuffer), totalQuotes, h.Config.DefaultSleepSeconds)
 		quotesBuffer = []common.DailyQuote{}
 	}
-	db.Close()
+	h.DB.Close()
 	fmt.Printf("Loaded %d quotes\n", totalQuotes)
 	readFile.Close()
 	if newPath != filePath {
