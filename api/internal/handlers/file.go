@@ -46,9 +46,9 @@ func (h *Handler) HandleGet(w http.ResponseWriter, req *http.Request) {
 	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": %s}"
 	start := time.Now()
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	stock := req.PathValue("stockName")
+	stock := strings.ToUpper(req.PathValue("stockName"))
 
 	stocks := h.DB.GetStockValues(stock)
 	fmt.Printf("Handler: Found %d stocks for %s. Converting...\n", len(stocks), stock)

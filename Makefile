@@ -32,6 +32,13 @@ build-docker:
 	cd ./api && \
 	docker build -t b3loader:latest -f build/Dockerfile .
 
+build-front:
+	cd ./frontend && \
+	docker build -t b3loader-front:latest -f build/Dockerfile .
+install-front:
+	cd ./frontend && \
+	pnpm install
+
 govet:
 	cd ./api && \
 	$(GOVET) ./...
@@ -46,5 +53,5 @@ refresh:
 	compose-up
 
 compose-up:
-	docker compose up -d --force-recreate b3loader influxdb grafana --build b3loader
-	python3 -m webbrowser http://localhost:3000
+	docker compose up -d --force-recreate  influxdb b3loader grafana b3loader-front --build b3loader b3loader-front --remove-orphans
+	python3 -m webbrowser http://localhost:9000

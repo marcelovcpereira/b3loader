@@ -17,7 +17,7 @@ const options : Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-export default function CustomTooltip(props) {
+export default function CustomTooltip(props:any) {
   const { active, payload } = props;
   if (active) {
     const currData = payload && payload.length ? payload[0].payload : null;

@@ -1,10 +1,12 @@
 import { useEffect, useReducer, useState } from 'react';
 import moment from 'moment'
-import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import CustomTooltip from './CustomTooltip';
-  
+
+const API_URL = "http://localhost:8080"
+console.log("API URL", API_URL)
 const fetchData = (stock: string) => {
-  let url = "http://localhost:8080/api/v1/quotes/" + stock
+  let url = `${API_URL}/api/v1/quotes/${stock}`
   console.log("FETCHING", url)
   return fetch(url)
       .then(response => response.json())
@@ -23,6 +25,8 @@ const dataReducer = (state:any, action:any) => {
     return { ...state, loading: false, error: false, data: action.payload };
     case "ERROR":
     return { ...state, loading: false, error: true, data: null };
+    case "NOT_FOUND":
+    return { ...state, loading: false, error: false, data: null };
     default:
     return state;
   }
@@ -60,22 +64,23 @@ export default function StockValue() {
     fetchData(name)
       .then((res:any) => {
         console.log("RESRESRRESRESRSERS", res)
-        res.data.forEach(d => {
-          d.Date = moment(d.Date).valueOf(); // date -> epoch
-        });
-        dispatch({ type: "LOADED", payload: res.data });
+        if (res) {
+          res.data.forEach((d:any) => {
+            d.Date = moment(d.Date).valueOf();
+          });
+          dispatch({ type: "LOADED", payload: res.data });
+        } else {
+          dispatch({ type: "ERROR" });
+        }
+        
       })
       .catch((err: Error) => {
         console.log(err)
         dispatch({ type: "ERROR" });
       });
   }
-  const changeStock = () => {
-    setStock("KNCR11")
-    updateQuotes("KNCR11")
-  }
 
-  const changeInput = (e) => {
+  const changeInput = (e:any) => {
     if (e.key === 'Enter') {
       console.log("TRIGGERING: " + e.target.value)
       setStock(e.target.value)
@@ -84,15 +89,10 @@ export default function StockValue() {
   }
 
   const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false,data: null});
+  
   useEffect(() => {
     updateQuotes(stock)
   }, []);
-  let min = "0"
-  let max = "0"
-  if (api.data != null && api.data !== undefined) {
-    min = api.data[0]['Date']
-    max = api.data[api.data.length-1]['Date']
-  }
   
   return api.loading ? (
     "Loading..."
@@ -103,7 +103,7 @@ export default function StockValue() {
     <>
     <div style={{width: "100%"}}>
       <div style={{float:"left", width:"20%", height:"100%", borderRadius:"50%", borderColor:"black"}}>
-        <span>{stock}</span>
+        <span>{stock.toUpperCase()}</span>
       </div>
       <div style={{float:"right", width:"80%", height:"100%"}}>
         <input type="text" onKeyDown={changeInput} /> <span style={{fontSize:"10px"}}>(ex: SAPR4, BBAS3, HGLG11, etc)</span>
@@ -154,6 +154,6 @@ export default function StockValue() {
       </AreaChart>
       </div>
     </>
-  ) : null;
+  ) : (<><span>Nenhum dado encontrado</span></>);
 }
   
