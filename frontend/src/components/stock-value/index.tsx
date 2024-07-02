@@ -101,23 +101,23 @@ export default function StockValue() {
   ) : api.data ? (
     
     <>
-    <div style={{width: "100%"}}>
+    <div style={{width: "100%", height:"60px"}}>
       <div style={{float:"left", width:"20%", height:"100%", borderRadius:"50%", borderColor:"black"}}>
-        <span>{stock.toUpperCase()}</span>
+        <span style={{fontFamily:"tahoma", fontSize:"27px", fontWeight:"bold", position: "relative", top:"20%"}}>{stock.toUpperCase()}</span>
       </div>
-      <div style={{float:"right", width:"80%", height:"100%"}}>
-        <input type="text" onKeyDown={changeInput} /> <span style={{fontSize:"10px"}}>(ex: SAPR4, BBAS3, HGLG11, etc)</span>
+      <div style={{float:"right", width:"80%", height:"100%", paddingTop:"15px"}}>
+        <input type="text" style={{width:"150px", height:"35px", fontFamily:"tahoma", fontSize:"20px"}} onKeyDown={changeInput} defaultValue={""}/> <span style={{fontSize:"15px"}}>(ex: SAPR4, BBAS3, HGLG11, etc)</span>
       </div>
     </div>
     <div style={{borderStyle:"thick", borderWidth:"5px", borderColor:"black", width: "1000px"}}>
     <AreaChart
-        width={1000}
-        height={500}
+        width={900}
+        height={400}
         data={api.data}
         margin={{
           top: 5,
           right: 30,
-          left: 20,
+          left: 60,
           bottom: 5,
         }}
       >
