@@ -31,7 +31,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/quotes/file/{name}/load", handler.HandleFile)
-	mux.HandleFunc("/api/v1/quotes/{stockName}", handler.HandleGet)
+	mux.HandleFunc("/api/v1/quotes/{stockName}", handler.HandleGetQuotes)
+	mux.HandleFunc("/api/v1/stocks/{stockName}", handler.HandleGetStocks)
 	fmt.Printf("Waiting API connections on port: %s...\n", config.Port)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", config.Port), mux))
 }

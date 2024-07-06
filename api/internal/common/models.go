@@ -93,6 +93,7 @@ type QuoteDB interface {
 	Connect()
 	PersistQuotes(quotes []DailyQuote) error
 	GetStockValues(stockName string) []StockValue
+	SearchStocks(stockName string) []string
 	Close()
 }
 

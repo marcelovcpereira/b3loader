@@ -41,7 +41,7 @@ func (h *Handler) HandleFile(w http.ResponseWriter, req *http.Request) {
 	fmt.Printf("Handler: file loaded in %s", elapsed)
 }
 
-func (h *Handler) HandleGet(w http.ResponseWriter, req *http.Request) {
+func (h *Handler) HandleGetQuotes(w http.ResponseWriter, req *http.Request) {
 	okResponse := "{\"status\":\"ok\", \"code\":200, \"data\": %s}"
 	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": %s}"
 	start := time.Now()
@@ -201,4 +201,29 @@ func (h *Handler) extractAndWriteFile(zipFile *zip.File, dest string) error {
 	}
 
 	return nil
+}
+
+func (h *Handler) HandleGetStocks(w http.ResponseWriter, req *http.Request) {
+	okResponse := "{\"status\":\"ok\", \"code\":200, \"data\": %s}"
+	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": %s}"
+	start := time.Now()
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	stock := strings.ToUpper(req.PathValue("stockName"))
+
+	stocks := h.DB.SearchStocks(stock)
+	fmt.Printf("Handler: Found %d stocks for %s. Converting...\n", len(stocks), stock)
+	fmt.Printf("Handler: Marshalling to json %d stocks...\n", len(stocks))
+	ret, err := json.Marshal(stocks)
+	if err != nil {
+		fmt.Printf("Handler: error marshalling stocks:%v\n", err)
+		w.Write([]byte(fmt.Sprintf(errorResponse, err.Error())))
+		return
+	}
+	response := fmt.Sprintf(okResponse, ret)
+	fmt.Printf("Handler: Returning %v\n", response)
+	w.Write([]byte(response))
+	elapsed := time.Since(start)
+	fmt.Printf("Handler: quotes returned in %s", elapsed)
 }

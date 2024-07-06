@@ -129,3 +129,35 @@ func (db *InfluxQuoteDB) GetStockValues(stockName string) []common.StockValue {
 	}
 	return stocks
 }
+
+func (db *InfluxQuoteDB) SearchStocks(stockName string) []string {
+	var stocks []string
+	tag := "StockName"
+	limit := 10
+	query := fmt.Sprintf(` import "influxdata/influxdb/schema" 
+ schema.tagValues(bucket: "%s", tag: "%s")
+|> filter(fn: (r) => r._value =~ /%s/) 
+|> limit(n:%d)`,
+		db.Config.InfluxBucket,
+		tag,
+		stockName,
+		limit,
+	)
+	fmt.Printf("DB: Executing query: '%s'", query)
+	queryApi := db.Client.QueryAPI(db.Config.InfluxORG)
+	result, err := queryApi.Query(context.Background(), query)
+
+	if err == nil {
+		for result.Next() {
+			fmt.Printf("value: %v\n", result.Record().Value())
+			value := (result.Record().Value()).(string)
+			stocks = append(stocks, value)
+		}
+		if result.Err() != nil {
+			fmt.Printf("query parsing error: %s\n", result.Err().Error())
+		}
+	} else {
+		fmt.Printf("DB: Error executing query: '%v'", err)
+	}
+	return stocks
+}

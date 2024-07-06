@@ -2,17 +2,27 @@ import { useEffect, useReducer, useState } from 'react';
 import moment from 'moment'
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import CustomTooltip from './CustomTooltip';
+import { Combobox, useCombobox } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
+import { TextInput, rem } from '@mantine/core';
+import { IconSearch } from '@tabler/icons-react';
+import { Loader } from '@mantine/core';
 
 const API_URL = "http://localhost:8080"
-console.log("API URL", API_URL)
-const fetchData = (stock: string) => {
+
+const searchQuotesFromStock = (stock: string) => {
   let url = `${API_URL}/api/v1/quotes/${stock}`
   console.log("FETCHING", url)
   return fetch(url)
       .then(response => response.json())
-      .then(result => {
-        console.log(result)
-        return result
+      .catch(error => console.log('error', error))
+}
+const searchStock = (stock: string) => {
+  let url = `${API_URL}/api/v1/stocks/${stock}`
+  console.log("FETCHING", url)
+  return fetch(url)
+      .then(response => {
+        return response.json()
       })
       .catch(error => console.log('error', error))
 }
@@ -46,7 +56,7 @@ function getTicksFromInterval(start: string, end: string): number[] {
     ticks.push(d6)
     startYear++
   }
-  console.log(`Defined ${ticks.length} ticks: ${ticks.join(",")}`)
+  // console.log(`Defined ${ticks.length} ticks: ${ticks.join(",")}`)
   return ticks
 }
 
@@ -54,23 +64,26 @@ function getDomainFromInterval(start: string, end: string): number[] {
   return [new Date(start).valueOf(), new Date(end).valueOf()]
 }
 
-
-
-export default function StockValue() {  
+export default function StockChart() {  
   const [stock, setStock] = useState("TAEE11"); 
-
-  const updateQuotes = (name: string) => {
+  const [stockList, setStockList] = useState([]); 
+  const icon = <IconSearch style={{ width: rem(16), height: rem(16) }} />;
+  const [searchTerm, setSearchTerm] = useState('')
+  const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false,data: null});
+  const combobox = useCombobox();
+  console.log("STOCK LIST:", stockList)
+  
+  const updateChart = (stockName: string) => {
     dispatch({ type: "LOADING" });
-    fetchData(name)
+    searchQuotesFromStock(stockName)
       .then((res:any) => {
-        console.log("RESRESRRESRESRSERS", res)
-        if (res) {
+        if (res && res.data) {
           res.data.forEach((d:any) => {
             d.Date = moment(d.Date).valueOf();
           });
           dispatch({ type: "LOADED", payload: res.data });
         } else {
-          dispatch({ type: "ERROR" });
+          dispatch({ type: "NOT_FOUND" });
         }
         
       })
@@ -80,33 +93,89 @@ export default function StockValue() {
       });
   }
 
-  const changeInput = (e:any) => {
-    if (e.key === 'Enter') {
-      console.log("TRIGGERING: " + e.target.value)
-      setStock(e.target.value)
-      updateQuotes(e.target.value)
+  const updateSearch = (name: string) => {
+    if (name.trim() != "") {
+      searchStock(name).then(res => {
+        console.log("RESRES", res)
+        console.log("RES>DATA", res.data)
+        if (res && res.data && res.data.length > 0) {
+          console.log("SETTING RES DATA")
+          setStockList(res.data)
+          combobox.toggleDropdown()
+        } else {
+          console.log("bosta", res)
+        }
+      }).catch((err: Error)=>{
+        console.log("er", err)
+      })
     }
   }
-
-  const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false,data: null});
   
   useEffect(() => {
-    updateQuotes(stock)
+    updateChart(stock)
   }, []);
-  
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      console.log("searchTerm", searchTerm)
+      updateSearch(searchTerm)
+    }, 1000)
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchTerm])
+
   return api.loading ? (
-    "Loading..."
+    <MantineProvider defaultColorScheme="light">
+      <Loader color="blue" />
+    </MantineProvider>
   ) : api.error ? (
     "Some error occurred"
-  ) : api.data ? (
-    
+  ) : api.data ? (  
     <>
+    <div id="searchInput" style={{width:"100%", display:"flex"}}>
+      <MantineProvider defaultColorScheme="light">
+        <Combobox
+          store={combobox}
+          width={250}
+          position="bottom-start"
+          withArrow
+          onOptionSubmit={(val) => {
+            console.log("SUBMITING", val)
+            setStock(val)
+            updateChart(val)
+            combobox.closeDropdown();
+          }}
+        >
+          <Combobox.Target withAriaAttributes={false}>
+              <TextInput
+                size="lg"
+                leftSectionPointerEvents="none"
+                leftSection={icon}
+                label=""
+                style={{margin:"auto", width:"250px", height:"45px", fontSize: "100px"}}  
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                placeholder=""
+                onClick={combobox.openDropdown}
+              />
+          </Combobox.Target>
+
+          <Combobox.Dropdown>
+            <Combobox.Options>
+              {
+                stockList.length > 0 ? 
+                  (stockList.map(stock => 
+                    <Combobox.Option value={stock}>{stock}</Combobox.Option>
+                  )) 
+                : 
+                  <Combobox.Empty>Nothing found</Combobox.Empty>
+              }
+            </Combobox.Options>
+          </Combobox.Dropdown>
+        </Combobox>
+      </MantineProvider>
+    </div>
     <div style={{width: "100%", height:"60px"}}>
       <div style={{float:"left", width:"20%", height:"100%", borderRadius:"50%", borderColor:"black"}}>
         <span style={{fontFamily:"tahoma", fontSize:"27px", fontWeight:"bold", position: "relative", top:"20%"}}>{stock.toUpperCase()}</span>
-      </div>
-      <div style={{float:"right", width:"80%", height:"100%", paddingTop:"15px"}}>
-        <input type="text" style={{width:"150px", height:"35px", fontFamily:"tahoma", fontSize:"20px"}} onKeyDown={changeInput} defaultValue={""}/> <span style={{fontSize:"15px"}}>(ex: SAPR4, BBAS3, HGLG11, etc)</span>
       </div>
     </div>
     <div style={{borderStyle:"thick", borderWidth:"5px", borderColor:"black", width: "1000px"}}>
@@ -135,6 +204,7 @@ export default function StockValue() {
             type="monotone"
             dataKey="Value"
             stroke="#a6a68e"
+            strokeWidth={2.5}
             fill="#c8c8af"
             fillOpacity={0.7}
             gradientTransform="skewX(20) translate(-35, 0)"
@@ -150,10 +220,14 @@ export default function StockValue() {
         />
         <Tooltip content={<CustomTooltip />} />
         
-        <Line yAxisId={10} type="linear" dataKey="Value" stroke="#8884d8" strokeWidth={"100px"} />
+        <Line yAxisId={10} type="linear" dataKey="Value" stroke="#8884d8" />
       </AreaChart>
       </div>
     </>
-  ) : (<><span>Nenhum dado encontrado</span></>);
+  ) : (
+    <>
+      <span>Nenhum dado encontrado</span>
+    </>
+  );
 }
   
