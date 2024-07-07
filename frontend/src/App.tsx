@@ -1,5 +1,5 @@
 import './App.css'
-import StockChart from './components/stock-chart'
+import SearchableStockChart from './components/searchable-stock-chart'
 import '@mantine/core/styles.css';
 function App() {
   return (
@@ -10,7 +10,7 @@ function App() {
         <p>Busque abaixo a cotação histórica de qualquer ação brasileira</p>
       </div>
 
-      <StockChart />
+      <SearchableStockChart />
     </>
   )
 }
