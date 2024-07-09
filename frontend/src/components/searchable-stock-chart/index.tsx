@@ -9,10 +9,13 @@ import SearchInput from '../search-input';
 import StockChart from '../stock-chart';
 
 const API_URL = "http://localhost:8080"
-
+console.log("VITE ENV:", import.meta.env) // "123"
 const searchQuotesFromStock = (stock: string) => {
   let url = `${API_URL}/api/v1/quotes/${stock}`
   console.log("FETCHING", url)
+  console.log("API",import.meta.env.VITE_B3LOADER_URL) // "123"
+  console.log("FOLDER",import.meta.env.VITE_DIRECTORY_PATH) // "123"
+
   return fetch(url)
       .then(response => response.json())
       .catch(error => console.log('error', error))

@@ -63,6 +63,9 @@ services:
     ports:
       - 9000:80
     environment:
-      B3LOADER_URL: ${B3LOADER_URL}
+      VITE_B3LOADER_URL: ${B3LOADER_URL}
+      VITE_DIRECTORY_PATH: ${B3LOADER_DIRECTORY_PATH}
+    volumes:
+      - ./data/b3loader-data:${B3LOADER_DIRECTORY_PATH}
     env_file:
       - path: ./.env

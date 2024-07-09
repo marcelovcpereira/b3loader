@@ -14,6 +14,9 @@ export interface SearchInputProps {
 
 export default function SearchInput(props: SearchInputProps) { 
     const icon = <IconSearch style={{ width: rem(16), height: rem(16) }} />;
+    const handleClick = () => { 
+        props.combobox.openDropdown()
+    }; 
     return (
         <div id="searchInput" style={{width:"100%", display:"flex"}}>
             <MantineProvider defaultColorScheme="light">
@@ -42,7 +45,7 @@ export default function SearchInput(props: SearchInputProps) {
                             }
                         }} 
                         placeholder=""
-                        onClick={props.combobox.openDropdown}
+                        onClick={handleClick}
                     />
                 </Combobox.Target>
 
