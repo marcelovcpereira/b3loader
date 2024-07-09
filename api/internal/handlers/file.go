@@ -5,10 +5,13 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +26,14 @@ type Handler struct {
 	DB     common.QuoteDB
 }
 
+type Chunk struct {
+	File         string `json:"file"`
+	ChunkNumber  int    `json:"chunkNumber"`
+	TotalChunks  int    `json:"totalChunks"`
+	Originalname string `json:"originalname"`
+	UUID         string `json:"uuid,omitempty"`
+}
+
 func NewHandler(config common.Config, db common.QuoteDB) *Handler {
 	return &Handler{
 		Config: config,
@@ -30,7 +41,7 @@ func NewHandler(config common.Config, db common.QuoteDB) *Handler {
 	}
 }
 
-func (h *Handler) HandleFile(w http.ResponseWriter, req *http.Request) {
+func (h *Handler) HandleImport(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte("{\"status\":\"ok\", \"code\":202}"))
@@ -204,11 +215,11 @@ func (h *Handler) extractAndWriteFile(zipFile *zip.File, dest string) error {
 }
 
 func (h *Handler) HandleGetStocks(w http.ResponseWriter, req *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	okResponse := "{\"status\":\"ok\", \"code\":200, \"data\": %s}"
 	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": %s}"
 	start := time.Now()
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	stock := strings.ToUpper(req.PathValue("stockName"))
 
@@ -226,4 +237,110 @@ func (h *Handler) HandleGetStocks(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(response))
 	elapsed := time.Since(start)
 	fmt.Printf("Handler: quotes returned in %s", elapsed)
+}
+
+func (h *Handler) fileExists(path string) bool {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true
+	}
+	if os.IsNotExist(err) {
+		return false
+	}
+	return false
+}
+
+func (h *Handler) HandleUpload(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Access-Control-Allow-Origin", "*")
+	err := request.ParseMultipartForm(6 * 1024 * 1024)
+	file, err := request.MultipartForm.File["chunk"][0].Open()
+	chunk, err := ioutil.ReadAll(file)
+	if err != nil {
+		message := fmt.Sprintf("Error parsing chunk: %v\n", err)
+		fmt.Println(message)
+		writer.Write([]byte(fmt.Sprintf("{\"error\":\"%s\"}", message)))
+		return
+	}
+	chunkNumber, err := strconv.Atoi(request.PostForm.Get("chunkNumber"))
+	if err != nil {
+		message := fmt.Sprintf("Error parsing chunkNumber: %v\n", err)
+		fmt.Println(message)
+		writer.Write([]byte(fmt.Sprintf("{\"error\":\"%s\"}", message)))
+		return
+	}
+	totalChunks, err := strconv.Atoi(request.PostForm.Get("totalChunks"))
+	if err != nil {
+		message := fmt.Sprintf("Error parsing totalChunks: %v\n", err)
+		fmt.Println(message)
+		writer.Write([]byte(fmt.Sprintf("{\"error\":\"%s\"}", message)))
+		return
+	}
+	fileName := request.PostForm.Get("originalname")
+	uid := uuid.New().String()
+	if request.PostForm.Get("uuid") != "" {
+		uid = request.PostForm.Get("uuid")
+	}
+	chunkDir := h.Config.DirectoryPath + "/chunks-" + uid
+	if !h.fileExists(chunkDir) {
+		os.MkdirAll(chunkDir, os.ModePerm)
+	}
+
+	chunkFilePath := fmt.Sprintf(`%s/%s.part_%d`, chunkDir, fileName, chunkNumber)
+
+	err = os.WriteFile(chunkFilePath, []byte(chunk), os.ModePerm)
+	if err != nil {
+		fmt.Printf("Error saving chunk: %v\n", err)
+		writer.Write([]byte("{\"error\":\"Error saving chunk\"}"))
+		return
+	}
+	fmt.Printf("Chunk %d/%d saved\n", chunkNumber, totalChunks)
+
+	if chunkNumber == totalChunks {
+		// If this is the last chunk, merge all chunks into a single file
+		err = h.mergeChunks(chunkDir, fileName, totalChunks)
+		if err != nil {
+			fmt.Printf("Error merging chunks: %v\n", err)
+			writer.Write([]byte("{\"error\":\"Error merging chunks\"}"))
+			return
+		}
+		fmt.Println("File merged successfully")
+		os.RemoveAll(chunkDir)
+
+	}
+	writer.Write([]byte(fmt.Sprintf("{\"message\": \"Chunk uploaded successfully\", \"uuid\":\"%s\"}", uid)))
+}
+
+func (h *Handler) mergeChunks(chunkDir string, fileName string, totalChunks int) error {
+	mergedFileDir := h.Config.DirectoryPath + "/"
+	mergedFilePath := mergedFileDir + fileName
+
+	if !h.fileExists(mergedFileDir) {
+		os.MkdirAll(mergedFileDir, os.ModePerm)
+	}
+
+	fo, err := os.Create(mergedFilePath)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err = fo.Close(); err != nil {
+			panic(err)
+		}
+	}()
+	w := bufio.NewWriter(fo)
+	for i := 1; i <= totalChunks; i++ {
+		chunkFilePath := fmt.Sprintf(`%s/%s.part_%d`, chunkDir, fileName, i)
+		chunkBuffer, erro := os.ReadFile(chunkFilePath)
+		if erro != nil {
+			return erro
+		}
+		_, errr := w.Write(chunkBuffer)
+		if errr != nil {
+			return errr
+		}
+	}
+
+	w.Flush()
+	fmt.Println("Chunks merged successfully")
+	return nil
 }

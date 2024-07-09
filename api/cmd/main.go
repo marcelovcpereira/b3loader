@@ -30,7 +30,8 @@ func main() {
 	handler := handlers.NewHandler(config, db)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/v1/quotes/file/{name}/load", handler.HandleFile)
+	mux.HandleFunc("/api/v1/quotes/upload", handler.HandleUpload)
+	mux.HandleFunc("/api/v1/quotes/file/{name}/import", handler.HandleImport)
 	mux.HandleFunc("/api/v1/quotes/{stockName}", handler.HandleGetQuotes)
 	mux.HandleFunc("/api/v1/stocks/{stockName}", handler.HandleGetStocks)
 	fmt.Printf("Waiting API connections on port: %s...\n", config.Port)

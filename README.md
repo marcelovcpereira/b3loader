@@ -43,12 +43,12 @@ This will run the 4 apps, but with NO DATA.
 The `b3loader` is a REST API that accepts requests for loading data into the database.
 The endpoint is:
 
-`http://localhost:8080/api/v1/quotes/file/{filename}/load`
+`http://localhost:8080/api/v1/quotes/file/{filename}/import`
 
 Where `filename` should be the name of a valid B3 Backup file located at `{THIS_PROJECT_PATH}/data/b3loader-data`. Example:
 
 ```shell
-curl http://localhost:8080/api/v1/quotes/file/COTAHIST_A2024.ZIP/load
+curl http://localhost:8080/api/v1/quotes/file/COTAHIST_A2024.ZIP/import
 ```
 
 
