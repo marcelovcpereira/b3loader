@@ -74,6 +74,7 @@ The app automatically unzips them locally for reading in case they are zipped.
 Visit [http://localhost:9000](http://localhost:9000) after running  `make compose-up`
 
 ![B3 Loader Frontend](https://github.com/marcelovcpereira/b3loader/blob/master/b3loader-front.png?raw=true)
+![B3 Loader Frontend2](https://github.com/marcelovcpereira/b3loader/blob/master/b3loader-front2.png?raw=true)
 
 ## InfluxDB Database
 
