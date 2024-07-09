@@ -1,14 +1,15 @@
 import DrawerMenu from "../components/drawer-menu";
 import { MantineProvider } from '@mantine/core';
-import { Container } from '@mantine/core';
+import { Container, Box } from '@mantine/core';
 import FileUploader from '../components/file-uploader';
+import FileScanner from "../components/file-scanner";
 // import './root.css'
 
 export default function UploadPage() {
     return (
         <MantineProvider defaultColorScheme="light">
             <Container>
-                <div id="upload" style={{
+                <Box id="upload" style={{
                     width:"96%", 
                     height:"100%", 
                     marginBottom: "30px", 
@@ -16,20 +17,19 @@ export default function UploadPage() {
                     display:"flex"
                 }}>
                     <FileUploader />
-                </div>
-                <div id="scanner" style={{
+                </Box>
+                <Box id="scanner" style={{
                     width:"96%", 
                     height:"100%", 
                     marginBottom: "30px", 
                     marginTop: "0px",
                     display:"flex"
                 }}>
-                    <div style={{maxWidth:"800px", margin: "auto", marginTop: "10px"}}>
-                    
+                    <div style={{maxWidth:"2500px", margin: "auto", marginTop: "10px"}}>
                         <h2>Arquivos encontrados no servidor:</h2>
-                    
+                        <FileScanner />
                     </div>
-                </div>
+                </Box>
                 <DrawerMenu/>
             </Container>
         </MantineProvider>

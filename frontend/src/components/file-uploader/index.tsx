@@ -1,43 +1,23 @@
 import { useState } from "react";
 import { Button, FileInput, Progress, MantineProvider, Loader } from "@mantine/core";
 import { IconFile } from '@tabler/icons-react';
-import { Buffer } from "buffer";
-
-const sendChunk = (chunk:any, chunkNumber: number, totalChunks: number, name: string, uploadID?:string) => {
-    console.log("Chunk:", chunk)
-    let body = {
-        file: chunk,
-        chunkNumber: chunkNumber,
-        totalChunks: totalChunks,
-        originalname: name
-    }
-    if (uploadID != "") {
-        body.uuid = uploadID
-    }
-    
-    return fetch("http://localhost:8080/api/v1/quotes/upload", {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: [
-        ["Content-type", "application/json"]
-    ]
-    })
-    .then((response) => response.json())
-    .catch((error) => {
-        console.error("Error uploading chunk:", error);
-    });
-}
-
 
 const FileUploader = () => {
+    const uploadURL = "http://localhost:8080/api/v1/quotes/upload"
     const icon = <IconFile style={{ width: "15px", height: "15px" }} stroke={1.5} />;
     const chunkSize = 5 * 1024 * 1024; // 5MB 
     const [selectedFile, setSelectedFile] = useState(null);
     const [status, setStatus] = useState("");
     const [progress, setProgress] = useState(0);
-
+    console.log("SELECTED",selectedFile)
     const handleFileChange = (e: File) => {
         setSelectedFile(e)
+    };
+
+    const handleClean = () => {
+        setSelectedFile(null)
+        setStatus("")
+        setProgress(0)
     };
 
   const handleFileUpload = () => {
@@ -64,12 +44,12 @@ const FileUploader = () => {
         if (uploadID != "") {
             formData.append("uuid", uploadID)
         }
-        fetch("http://localhost:8080/api/v1/quotes/upload", {
+        fetch(uploadURL, {
             method: "POST",
             body: formData,
-        })
-        .then((response) => response.json())
-        .then((data) => {
+        }).then(
+            (response) => response.json()
+        ).then((data) => {
             console.log({ data });
             uploadID = data.uuid
             const temp = `Chunk ${chunkNumber}/${totalChunks} uploaded successfully`;
@@ -109,11 +89,18 @@ const FileUploader = () => {
                 rightSectionPointerEvents="none"
                 mt="md"
                 onChange={handleFileChange}
+                value={selectedFile}
                 style={{marginTop:"0px",maxWidth:"250px", maxHeight:"40px", margin: "auto"}}
-            /> 
+            />
+            <Button 
+                onClick={handleClean}
+                style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px"}}
+            >
+                Limpar
+            </Button> 
             <Button 
                 onClick={handleFileUpload}
-                style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px", margin:"auto"}}
+                style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
             >
                 Upload
             </Button>

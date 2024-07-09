@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/marcelovcpereira/b3loader/api/internal/common"
@@ -34,6 +36,12 @@ type Chunk struct {
 	UUID         string `json:"uuid,omitempty"`
 }
 
+type B3File struct {
+	Name      string `json:"name"`
+	SizeBytes int64  `json:"sizeBytes"`
+	Type      string `json:"type"`
+}
+
 func NewHandler(config common.Config, db common.QuoteDB) *Handler {
 	return &Handler{
 		Config: config,
@@ -44,9 +52,31 @@ func NewHandler(config common.Config, db common.QuoteDB) *Handler {
 func (h *Handler) HandleImport(w http.ResponseWriter, req *http.Request) {
 	start := time.Now()
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte("{\"status\":\"ok\", \"code\":202}"))
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Write([]byte("{\"status\":\"ok\", \"code\":200}"))
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		h.processFile(req.PathValue("name"))
+	}()
+	elapsed := time.Since(start)
+	fmt.Printf("Handler: file loaded in %s", elapsed)
+}
 
-	h.processFile(req.PathValue("name"))
+func (h *Handler) HandleListFiles(w http.ResponseWriter, req *http.Request) {
+	start := time.Now()
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	rawData := h.listFiles()
+	data, err := json.Marshal(rawData)
+	data = []byte(strings.ReplaceAll(string(data), "\"", "\\\""))
+	if err != nil {
+		panic(err)
+	}
+	body := fmt.Sprintf("{\"status\":\"ok\",\"data\":\"%s\",\"code\":200}", data)
+	fmt.Printf("returning %s", body)
+	w.Write([]byte(body))
 
 	elapsed := time.Since(start)
 	fmt.Printf("Handler: file loaded in %s", elapsed)
@@ -75,6 +105,27 @@ func (h *Handler) HandleGetQuotes(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(response))
 	elapsed := time.Since(start)
 	fmt.Printf("Handler: quotes returned in %s", elapsed)
+}
+
+func (h *Handler) listFiles() []B3File {
+	var ret []B3File
+	files, err := ioutil.ReadDir(h.Config.DirectoryPath)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, file := range files {
+		if strings.HasPrefix(file.Name(), ".") {
+			continue
+		}
+		ret = append(ret, B3File{
+			Name:      file.Name(),
+			SizeBytes: file.Size(),
+			Type:      h.getFileType(file),
+		})
+		fmt.Println(file.Name(), file.IsDir())
+	}
+	return ret
 }
 
 func (h *Handler) processFile(fileName string) {
@@ -343,4 +394,15 @@ func (h *Handler) mergeChunks(chunkDir string, fileName string, totalChunks int)
 	w.Flush()
 	fmt.Println("Chunks merged successfully")
 	return nil
+}
+
+func (h *Handler) getFileType(file fs.FileInfo) string {
+	name := strings.ToLower(file.Name())
+	if strings.HasSuffix(name, ".txt") {
+		return "text/plain"
+	}
+	if strings.HasSuffix(name, ".zip") {
+		return "application/zip"
+	}
+	return strings.Split(name, ".")[1]
 }
