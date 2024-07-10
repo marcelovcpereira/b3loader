@@ -1,18 +1,18 @@
 import { useState } from "react";
-import { Button, FileInput, Progress, MantineProvider, Loader } from "@mantine/core";
+import { Button, FileInput, Progress, Loader } from "@mantine/core";
 import { IconFile } from '@tabler/icons-react';
+
+const UPLOAD_QUOTES_MESSAGE = "Upload quote files in B3 format"
 
 const FileUploader = () => {
     const uploadURL = "http://localhost:8080/api/v1/quotes/upload"
     const icon = <IconFile style={{ width: "15px", height: "15px" }} stroke={1.5} />;
-    const chunkSize = 5 * 1024 * 1024; // 5MB 
-    const [selectedFile, setSelectedFile] = useState(null);
+    
+    const chunkSize = 5 * 1024 * 1024; // 5MB
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [status, setStatus] = useState("");
     const [progress, setProgress] = useState(0);
-    console.log("SELECTED",selectedFile)
-    const handleFileChange = (e: File) => {
-        setSelectedFile(e)
-    };
+
 
     const handleClean = () => {
         setSelectedFile(null)
@@ -26,7 +26,7 @@ const FileUploader = () => {
       return;
     }
     
-    let totalChunks = Math.ceil(selectedFile.size / chunkSize);
+    let totalChunks = Math.ceil((selectedFile as File).size / chunkSize);
     const chunkProgress = 100 / totalChunks;
     let chunkNumber = 1;
     let start = 0;
@@ -35,12 +35,12 @@ const FileUploader = () => {
     
     const uploadNextChunk = async () => {
       if (chunkNumber <= totalChunks) {
-        const chunk = selectedFile.slice(start, end, selectedFile.type);
+        const chunk = (selectedFile as File).slice(start, end, (selectedFile as File).type);
         const formData = new FormData();
         formData.append("chunk", chunk);
-        formData.append("chunkNumber", chunkNumber);
-        formData.append("totalChunks", totalChunks);
-        formData.append("originalname", selectedFile.name);
+        formData.append("chunkNumber", chunkNumber.toString());
+        formData.append("totalChunks", totalChunks.toString());
+        formData.append("originalname", (selectedFile as File).name);
         if (uploadID != "") {
             formData.append("uuid", uploadID)
         }
@@ -79,7 +79,7 @@ const FileUploader = () => {
 
   return (
     <div style={{width:"500px"}}>
-      <h2>Upload quote files in B3 format</h2>
+      <h2>{UPLOAD_QUOTES_MESSAGE}</h2>
       
       <h3 style={{fontSize:fontSize}}>{progress > 0 && progress < 100 && <Loader color="blue" style={{marginRight:"20px"}}/>} {status}</h3>
       {progress > 0 && <Progress value={progress} style={{display:"block", marginBottom:"20px"}}/>}
@@ -91,7 +91,7 @@ const FileUploader = () => {
                 placeholder="Select a file..."
                 rightSectionPointerEvents="none"
                 mt="md"
-                onChange={handleFileChange}
+                onChange={setSelectedFile}
                 value={selectedFile}
                 style={{marginTop:"0px",minWidth:"200px",maxWidth:"250px", maxHeight:"40px", margin: "auto"}}
             />

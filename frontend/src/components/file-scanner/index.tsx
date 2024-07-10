@@ -1,39 +1,31 @@
 import { useEffect, useReducer, useState } from 'react';
-import { Radio, Group, Grid, Text, Container, Button } from '@mantine/core';
+import { Radio, Group, Grid, Text, Button, Box } from '@mantine/core';
 import classes from './file-scanner.module.css';
+import {IconFileText, IconFileTypeZip} from '@tabler/icons-react';
+
+const AVAILABLE_FILES_MESSAGE = "Available Files for Import"
+
 const listFiles = () => {
-    let url = `http://localhost:8080/api/v1/quotes/file/list`
-    console.log("FETCHING", url)
-    return fetch(url)
-        .then(response => {
-          return response.json()
-        })
-        .catch(error => console.log('error', error))
-  }
+  let url = `http://localhost:8080/api/v1/quotes/file/list`
+  console.log("FETCHING", url)
+  return fetch(url)
+      .then(response => {
+        return response.json()
+      })
+      .catch(error => console.log('error', error))
+}
 
-  const importFile = (name:string) => {
-    let url = `http://localhost:8080/api/v1/quotes/file/${name}/import`
-    console.log("FETCHING", url)
-    return fetch(url, {method:"POST"})
-        .then(response => {
-          return response.json()
-        })
-        .catch(error => console.log('error', error))
-  }
+const importFile = (name:string) => {
+  let url = `http://localhost:8080/api/v1/quotes/file/${name}/import`
+  console.log("FETCHING", url)
+  return fetch(url, {method:"POST"})
+      .then(response => {
+        return response.json()
+      })
+      .catch(error => console.log('error', error))
+}
 
-
-const data = [
-  {
-    name: '@mantine/core',
-    description: 'Core components library: inputs, buttons, overlays, etc.',
-  },
-  { name: '@mantine/hooks', description: 'Collection of reusable hooks for React applications.' },
-  { name: '@mantine/notifications', description: 'Notifications system' },
-];
-
-
-
-function humanFileSize(bytes, dp=1) {
+function humanFileSize(bytes:any, dp=1) {
     const thresh = 1000;
   
     if (Math.abs(bytes) < thresh) {
@@ -68,14 +60,16 @@ const dataReducer = (state:any, action:any) => {
   };
 
 export default function FileScanner() {
+  const zipIcon = <IconFileTypeZip />
+  const txtIcon = <IconFileText />
   const [value, setValue] = useState<string | null>(null);
   const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false,data: null});
 
-  const handleImport = (e) => {
+  const handleImport = () => {
     console.log("importing",value)
     importFile(value as string)
 }
-const handleUpdate = (e) => {
+const handleUpdate = () => {
     updateList()
 }
   const updateList = () => {
@@ -96,14 +90,15 @@ const handleUpdate = (e) => {
       });
 }
 
-  const cards = api.data? api.data.map((item) => (
-    <Grid.Col span={4} style={{margin:"auto"}}>  
-        <Radio.Card className={classes.root} radius="md" value={item.name} key={item.name} style={{minWidth:"220px"}}>
+  const cards = api.data? api.data.map((item:any) => (
+    <Grid.Col span={4} style={{width:"265px",overflow:"scroll"}}>  
+        <Radio.Card className={classes.root} radius="md" value={item.name} key={item.name} >
         <Group id="carGroup" >
-            <Radio.Indicator key={item.name} />
+            <Radio.Indicator key={item.name} />{item.type == "application/zip" ? zipIcon : txtIcon }
             <div>
                 <Text className={classes.label}>{item.name}</Text>
                 <Text className={classes.description}>{humanFileSize(item.sizeBytes)}</Text>
+                
                 <Text className={classes.description}>{item.type}</Text>
             </div>
         </Group>
@@ -118,31 +113,27 @@ const handleUpdate = (e) => {
 
   let label = api.data && api.data.length > 0 ? "select a file to import" : "no files found"
   return (
-    <>
+    <Box>
+        <h2>{AVAILABLE_FILES_MESSAGE}</h2>
         <Radio.Group
             id="radioGroupTAG"
             value={value}
             onChange={setValue}
             label={label}
             description=""
+            style={{margin:"auto", marginBottom:"15px"}}
         >
             <Grid>
                 {cards}
             </Grid>
         </Radio.Group>
       
-        <Button 
-            onClick={handleUpdate}
-            style={{marginTop:"15px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
-        >
+        <Button onClick={handleUpdate}>
             Refresh
         </Button>
-        <Button 
-            onClick={handleImport}
-            style={{marginTop:"15px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
-        >
+        <Button onClick={handleImport} style={{marginLeft:"15px"}}>
             Import
         </Button>
-    </>
+    </Box>
   );
 }
