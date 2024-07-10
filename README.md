@@ -51,7 +51,6 @@ Where `filename` should be the name of a valid B3 Backup file located at `{THIS_
 curl http://localhost:8080/api/v1/quotes/file/COTAHIST_A2024.ZIP/import
 ```
 
-
 ## Downloading the data directly from B3
 
 B3 website provides a form for downloading historical data [here](https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/historico/mercado-a-vista/series-historicas/).
@@ -66,14 +65,25 @@ COTAHIST_A2023.ZIP
 
 B3 provides files with data from 1986 until now.
 
-Put as many files as you want in the `b3loader-data` folder.
-The app automatically unzips them locally for reading in case they are zipped.
+Once you download a file, you have 2 options to make it available for the app: 
+
+- Move it to the `b3-loader/data/b3loader-data` folder.
+
+- Open the frontend and use the Upload feature to send the file to the server
+
+Once the file is inside the server, you have 2 options to load the data into the database:
+
+- Use the import endpoint
+
+- Open the frontend and use the Import feature
+
 
 ## Frontend
 
 Visit [http://localhost:9000](http://localhost:9000) after running  `make compose-up`
 
 ![B3 Loader Frontend](https://github.com/marcelovcpereira/b3loader/blob/master/b3loader-front.png?raw=true)
+
 ![B3 Loader Frontend2](https://github.com/marcelovcpereira/b3loader/blob/master/b3loader-front2.png?raw=true)
 
 ## InfluxDB Database
@@ -84,7 +94,7 @@ http://localhost:8086
 ```
 And login with the user/pass that you defined in the `.env` file.
 
-## Grafana dashboard
+## Grafana dashboard (optional service that will be removed in favor of the frontend)
 
 You can see an example dashboard if you visit grafana at:
 ```shell
