@@ -136,7 +136,7 @@ export default function DrawerMenu() {
         <Divider />
         <List>
           <Link to="/">
-            <ListItem key={"Inicio"} disablePadding sx={{ display: 'block' }}>
+            <ListItem key={"Home"} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 sx={{
                   minHeight: 48,
@@ -153,7 +153,7 @@ export default function DrawerMenu() {
                 >
                   <IconHome />
                 </ListItemIcon>
-                <ListItemText primary={"Início"} sx={{ opacity: open ? 1 : 0 }} />
+                <ListItemText primary={"Home"} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>
             </ListItem>
           </Link>

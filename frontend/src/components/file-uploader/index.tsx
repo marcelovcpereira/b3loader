@@ -52,7 +52,8 @@ const FileUploader = () => {
         ).then((data) => {
             console.log({ data });
             uploadID = data.uuid
-            const temp = `Chunk ${chunkNumber}/${totalChunks} uploaded successfully`;
+            let percent = Math.round(chunkNumber/totalChunks*100)
+            const temp = `${percent}%`;
             setStatus(temp);
             setProgress(Number((chunkNumber) * chunkProgress));
             console.log(temp);
@@ -74,29 +75,31 @@ const FileUploader = () => {
     uploadNextChunk();
   };
 
+  let fontSize = progress > 0 && progress < 100 ? "35px" : "20px"
+
   return (
     <div style={{width:"500px"}}>
-      <h2>Upload de arquivos no formato B3</h2>
-      {progress > 0 && progress < 100 && <Loader color="blue" />}
-      <h3>{status}</h3>
+      <h2>Upload quote files in B3 format</h2>
+      
+      <h3 style={{fontSize:fontSize}}>{progress > 0 && progress < 100 && <Loader color="blue" style={{marginRight:"20px"}}/>} {status}</h3>
       {progress > 0 && <Progress value={progress} style={{display:"block", marginBottom:"20px"}}/>}
       <div style={{width:"100%", display:"flex", marginTop:"0px"}}>
             <FileInput
                 clearable
                 accept="application/zip,text/plain"
                 leftSection={icon}
-                placeholder="Selecione um arquivo..."
+                placeholder="Select a file..."
                 rightSectionPointerEvents="none"
                 mt="md"
                 onChange={handleFileChange}
                 value={selectedFile}
-                style={{marginTop:"0px",maxWidth:"250px", maxHeight:"40px", margin: "auto"}}
+                style={{marginTop:"0px",minWidth:"200px",maxWidth:"250px", maxHeight:"40px", margin: "auto"}}
             />
             <Button 
                 onClick={handleClean}
                 style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px"}}
             >
-                Limpar
+                Clear
             </Button> 
             <Button 
                 onClick={handleFileUpload}

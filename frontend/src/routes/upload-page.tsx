@@ -26,7 +26,7 @@ export default function UploadPage() {
                     display:"flex"
                 }}>
                     <div style={{maxWidth:"2500px", margin: "auto", marginTop: "10px"}}>
-                        <h2>Arquivos encontrados no servidor:</h2>
+                        <h2>Available Files for Import</h2>
                         <FileScanner />
                     </div>
                 </Box>

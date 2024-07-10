@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from 'react';
 import moment from 'moment'
-import { useCombobox } from '@mantine/core';
+import { Box, useCombobox } from '@mantine/core';
 import { MantineProvider } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { Loader } from '@mantine/core';
@@ -9,7 +9,11 @@ import SearchInput from '../search-input';
 import StockChart from '../stock-chart';
 
 const API_URL = "http://localhost:8080"
+const NO_DATA_FOUND_MESSAGE = "No data found"
+const ERROR_MESSAGE = "Error searching quote data"
+
 console.log("VITE ENV:", import.meta.env) // "123"
+
 const searchQuotesFromStock = (stock: string) => {
   let url = `${API_URL}/api/v1/quotes/${stock}`
   console.log("FETCHING", url)
@@ -118,7 +122,7 @@ export default function SearchableStockChart() {
     return (
       <MantineProvider defaultColorScheme="light">
         <Alert variant="outline" color="red" title="Erro inesperado" icon={infoIcon}>
-          Erro ao buscar dados das cotações
+          {ERROR_MESSAGE}
         </Alert>
       </MantineProvider>
     )
@@ -140,9 +144,11 @@ export default function SearchableStockChart() {
 
   const RenderNoData = () => {
     return (
-      <>
-        <span>Nenhum dado encontrado</span>
-      </>
+      <MantineProvider defaultColorScheme="light">
+        <Box>
+          <span>{NO_DATA_FOUND_MESSAGE}</span>
+        </Box>
+      </MantineProvider>
     )
   }
   

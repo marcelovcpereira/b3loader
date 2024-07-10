@@ -72,7 +72,6 @@ export default function FileScanner() {
   const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false,data: null});
 
   const handleImport = (e) => {
-    console.log("EEEE",e)
     console.log("importing",value)
     importFile(value as string)
 }
@@ -117,7 +116,7 @@ const handleUpdate = (e) => {
     updateList()
   }, []);
 
-  let label = api.data && api.data.length > 0 ? "selecione um arquivo para importar" : "nenhum arquivo encontrado"
+  let label = api.data && api.data.length > 0 ? "select a file to import" : "no files found"
   return (
     <>
         <Radio.Group
@@ -134,15 +133,15 @@ const handleUpdate = (e) => {
       
         <Button 
             onClick={handleUpdate}
-            style={{marginTop:"10px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
+            style={{marginTop:"15px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
         >
-            Atualizar
+            Refresh
         </Button>
         <Button 
             onClick={handleImport}
-            style={{marginTop:"10px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
+            style={{marginTop:"15px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
         >
-            Importar
+            Import
         </Button>
     </>
   );
