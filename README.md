@@ -34,22 +34,9 @@ Or
 ```shell
 docker compose up -d
 ```
-in case you don't have python3 installed or even Make
+in case you don't have python3 installed or even Make. Then visit `http://localhost:9000`
 
 This will run the 4 apps, but with NO DATA.
-
-## Loading data into the database
-
-The `b3loader` is a REST API that accepts requests for loading data into the database.
-The endpoint is:
-
-`http://localhost:8080/api/v1/quotes/file/{filename}/import`
-
-Where `filename` should be the name of a valid B3 Backup file located at `{THIS_PROJECT_PATH}/data/b3loader-data`. Example:
-
-```shell
-curl http://localhost:8080/api/v1/quotes/file/COTAHIST_A2024.ZIP/import
-```
 
 ## Downloading the data directly from B3
 
@@ -69,14 +56,28 @@ Once you download a file, you have 2 options to make it available for the app:
 
 - Move it to the `b3-loader/data/b3loader-data` folder.
 
-- Open the frontend and use the Upload feature to send the file to the server
+- Open the frontend and use the Upload feature to send the file to the server - [http://localhost:9000/upload](http://localhost:9000/upload)
 
 Once the file is inside the server, you have 2 options to load the data into the database:
 
-- Use the import endpoint
+- Use the import endpoint (see below)
 
 - Open the frontend and use the Import feature
 
+Once the data is imported, you can search for stock values in the Home page of the frontend.
+
+## Loading data into the database via REST API (optional)
+
+The `b3loader` is a REST API that accepts requests for loading data into the database.
+The endpoint is:
+
+`http://localhost:8080/api/v1/quotes/file/{filename}/import`
+
+Where `filename` should be the name of a valid B3 Backup file located at `{THIS_PROJECT_PATH}/data/b3loader-data`. Example:
+
+```shell
+curl http://localhost:8080/api/v1/quotes/file/COTAHIST_A2024.ZIP/import
+```
 
 ## Frontend
 
