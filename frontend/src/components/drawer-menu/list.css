@@ -1,0 +1,14 @@
+#list li{
+  
+}
+
+#list a{
+  color: #84846c;
+}
+#list li:hover div{
+  background-color: #b7b79e;
+  color: #ffffff;
+  font-weight: bold;
+}
+ 
+  

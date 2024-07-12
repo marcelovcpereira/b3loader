@@ -10,6 +10,7 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import UploadPage from './routes/upload-page';
+import PositionPage from './routes/position';
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,11 @@ const router = createBrowserRouter([
     element: <UploadPage />,
     errorElement: <ErrorPage />,
   },
+  {
+    path: "/position",
+    element: <PositionPage />,
+    errorElement: <ErrorPage />
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

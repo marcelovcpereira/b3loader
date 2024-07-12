@@ -13,10 +13,10 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Logo from '../../assets/b3logo.png'
 import LogoShort from '../../assets/b3logoShort.png'
-import { MantineProvider, CSSVariablesResolver } from '@mantine/core';
-import { IconHome, IconInbox } from '@tabler/icons-react';
+import { MantineProvider, CSSVariablesResolver, Tooltip } from '@mantine/core';
+import { IconHome, IconInbox, IconWallet } from '@tabler/icons-react';
 import { Link } from "react-router-dom";
-
+import './list.css'
 
 const drawerWidth = 200;
 
@@ -81,6 +81,12 @@ const closedStyle = {
   
 }
 
+const listStyle = {
+  color: "#84846c",
+  "hover":"color:blue"
+}
+
+
 const resolver: CSSVariablesResolver = (theme) => ({
   variables: {
     '--mantine-hero-height': theme.other.heroHeight,
@@ -93,6 +99,16 @@ const resolver: CSSVariablesResolver = (theme) => ({
   },
 });
 
+const tooltipProperties = {
+  withArrow: true,
+  offset: 5,
+  style: {
+    zIndex:"11",
+    display:"block"
+  },
+  
+}
+
 
 export default function DrawerMenu() {
   const [open, setOpen] = React.useState(false);
@@ -104,14 +120,20 @@ export default function DrawerMenu() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
+  if (open) {
+    tooltipProperties.style.display = "none"
+  } else {
+    tooltipProperties.style.display = "block"
+  }
+  
   
   return (
     <MantineProvider
     cssVariablesResolver={resolver}
   >
     <Box sx={{ display: 'flex' }}>
-      {/* <CssBaseline /> */}
-      <Drawer variant="permanent" open={open} >
+      <Drawer variant="permanent" open={open} style={{zIndex:"10"}}>
         <DrawerHeader style={open? openStyle:closedStyle}>
           { open ?
             <IconButton onClick={handleDrawerClose} style={{outline:"none"}}>
@@ -134,7 +156,8 @@ export default function DrawerMenu() {
         } 
         </DrawerHeader>
         <Divider />
-        <List>
+        <List id="list" >
+        <Tooltip label="Home" {...tooltipProperties}>
           <Link to="/">
             <ListItem key={"Home"} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
@@ -157,6 +180,32 @@ export default function DrawerMenu() {
               </ListItemButton>
             </ListItem>
           </Link>
+          </Tooltip>
+          <Tooltip label="B3 Wallet" {...tooltipProperties}>
+          <Link to="/position">
+            <ListItem key={"position"} disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                sx={{
+                  minHeight: 48,
+                  justifyContent: open ? 'initial' : 'center',
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: open ? 3 : 'auto',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <IconWallet />
+                </ListItemIcon>
+                <ListItemText primary={"B3 Wallet"} sx={{ opacity: open ? 1 : 0 }} />
+              </ListItemButton>
+            </ListItem>
+          </Link>
+          </Tooltip>
+          <Tooltip label="Upload" {...tooltipProperties}>
           <Link to="/upload">
             <ListItem key={"Upload"} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
@@ -179,6 +228,7 @@ export default function DrawerMenu() {
               </ListItemButton>
             </ListItem>
           </Link>
+          </Tooltip>
         </List>
       </Drawer>
     </Box>

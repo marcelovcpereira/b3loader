@@ -4,11 +4,11 @@ Shows historical data from B3 (Brazilian Stock Exchange) in visual dashboards.
 
 Composed of 4 parts:
 
-- `B3loader`: Golang project that loads backup files, parses and persists the data on a Influx database
+- `B3loader`: Golang REST API that loads backup files, parses and persists the data on a Influx database
 
-- `InfluxDB`: Event database that stores stock information
+- `InfluxDB`: Event database that persists stock information
 
-- `B3loader-front`: Frontend application for visualizing customized charts
+- `B3loader-front`: React app for visualizing/uploading/importing data
 
 - `Grafana`: (optional) Visualization tool that provides a dummy dashboard for visualizing the data in the database
 
@@ -34,14 +34,15 @@ Or
 ```shell
 docker compose up -d
 ```
-in case you don't have python3 installed or even Make. Then visit `http://localhost:9000`
+in case you don't have python3 installed or even Make. 
+Then visit `http://localhost:9000`.
 
 This will run the 4 apps, but with NO DATA.
 
 ## Downloading the data directly from B3
 
 B3 website provides a form for downloading historical data [here](https://www.b3.com.br/pt_br/market-data-e-indices/servicos-de-dados/market-data/historico/mercado-a-vista/series-historicas/).
-You can download the data yearly and the file name will be in the format:
+You can download the data by year. The file name has this format:
 ```shell
 COTAHIST_A{YEAR}.ZIP
 ```
@@ -56,17 +57,19 @@ Once you download a file, you have 2 options to make it available for the app:
 
 - Move it to the `b3-loader/data/b3loader-data` folder.
 
+or
+
 - Open the frontend and use the Upload feature to send the file to the server - [http://localhost:9000/upload](http://localhost:9000/upload)
 
 Once the file is inside the server, you have 2 options to load the data into the database:
 
-- Use the import endpoint (see below)
+- Use CLI to call the import endpoint (see below)
 
 - Open the frontend and use the Import feature
 
 Once the data is imported, you can search for stock values in the Home page of the frontend.
 
-## Loading data into the database via REST API (optional)
+## Loading data into the database via CLI (optional)
 
 The `b3loader` is a REST API that accepts requests for loading data into the database.
 The endpoint is:
@@ -78,6 +81,12 @@ Where `filename` should be the name of a valid B3 Backup file located at `{THIS_
 ```shell
 curl http://localhost:8080/api/v1/quotes/file/COTAHIST_A2024.ZIP/import
 ```
+
+You can check the files that are available to be imported by either:
+
+- Calling the endpoint `http://localhost:8080/api/v1/quotes/file/list`
+
+- Visiting the [frontend](http://localhost:9000/upload) and using the Import feature
 
 ## Frontend
 
