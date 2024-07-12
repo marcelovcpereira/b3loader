@@ -31,3 +31,13 @@
     color: var(--mantine-color-dimmed);
     font-size: var(--mantine-font-size-xs);
   }
+
+  .buttons {
+    background-color: #b7b79e;
+    color: #ffffff;
+  }
+  .buttons:hover{
+    background-color: #84846c;
+    color: #ffffff;
+    font-weight: bold;
+  }

@@ -14,7 +14,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Logo from '../../assets/b3logo.png'
 import LogoShort from '../../assets/b3logoShort.png'
 import { MantineProvider, CSSVariablesResolver, Tooltip } from '@mantine/core';
-import { IconHome, IconInbox, IconWallet } from '@tabler/icons-react';
+import { IconHome, IconUpload, IconWallet } from '@tabler/icons-react';
 import { Link } from "react-router-dom";
 import './list.css'
 
@@ -105,6 +105,7 @@ const tooltipProperties = {
 
 
 export default function DrawerMenu() {
+  
   const [open, setOpen] = React.useState(false);
 
   const handleDrawerOpen = () => {
@@ -199,7 +200,7 @@ export default function DrawerMenu() {
             </ListItem>
           </Link>
           </Tooltip>
-          <Tooltip label="Upload" {...tooltipProperties}>
+          <Tooltip label="Upload & Import" {...tooltipProperties}>
           <Link to="/upload">
             <ListItem key={"Upload"} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
@@ -216,7 +217,7 @@ export default function DrawerMenu() {
                     justifyContent: 'center',
                   }}
                 >
-                  <IconInbox />
+                  <IconUpload />
                 </ListItemIcon>
                 <ListItemText primary={"Upload"} sx={{ opacity: open ? 1 : 0 }} />
               </ListItemButton>

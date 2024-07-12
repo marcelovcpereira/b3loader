@@ -128,10 +128,10 @@ const handleUpdate = () => {
             </Grid>
         </Radio.Group>
       
-        <Button onClick={handleUpdate}>
+        <Button className="buttons" onClick={handleUpdate}>
             Refresh
         </Button>
-        <Button onClick={handleImport} style={{marginLeft:"15px"}}>
+        <Button className="buttons" onClick={handleImport} style={{marginLeft:"15px"}}>
             Import
         </Button>
     </Box>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, FileInput, Progress, Loader } from "@mantine/core";
 import { IconFile } from '@tabler/icons-react';
+import './button.css'
 
 const UPLOAD_QUOTES_MESSAGE = "Upload quote files in B3 format"
 
@@ -96,12 +97,14 @@ const FileUploader = () => {
                 style={{marginTop:"0px",minWidth:"200px",maxWidth:"250px", maxHeight:"40px", margin: "auto"}}
             />
             <Button 
+                className="buttons"
                 onClick={handleClean}
                 style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px"}}
             >
                 Clear
             </Button> 
             <Button 
+                className="buttons"
                 onClick={handleFileUpload}
                 style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
             >
