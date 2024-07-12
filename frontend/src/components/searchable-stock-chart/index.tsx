@@ -1,9 +1,9 @@
 import { useEffect, useReducer, useState } from 'react';
 import moment from 'moment'
-import { Box, useCombobox } from '@mantine/core';
+import { Box, Title, useCombobox } from '@mantine/core';
 import { MantineProvider } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
-import { Loader } from '@mantine/core';
+import { Loader, Text } from '@mantine/core';
 import { Alert } from '@mantine/core';
 import SearchInput from '../search-input';
 import StockChart from '../stock-chart';
@@ -113,7 +113,18 @@ export default function SearchableStockChart() {
   const RenderLoading = () => {
     return (
       <MantineProvider defaultColorScheme="light">
-        <Loader color="blue" />
+        {RenderHeader()}
+        <Loader color="blue" style={{marginLeft:"20px", marginTop:"5px"}}/>
+      </MantineProvider>
+    )
+  }
+
+  const RenderHeader = () => {
+    return (
+      <MantineProvider defaultColorScheme="light">
+        <Title order={1} style={{marginBottom:"40px", paddingLeft:"30px", float:"left", fontFamily:"tahoma", fontWeight:"100  "}}>
+          B3 Stock Price
+        </Title>
       </MantineProvider>
     )
   }
@@ -131,6 +142,7 @@ export default function SearchableStockChart() {
   const RenderChart = () => {
     return (
       <>
+      {RenderHeader()}
       <SearchInput 
         combobox={combobox} 
         valuesList={stockList}
@@ -145,6 +157,7 @@ export default function SearchableStockChart() {
   const RenderNoData = () => {
     return (
       <MantineProvider defaultColorScheme="light">
+        {RenderHeader()}
         <Box>
           <span>{NO_DATA_FOUND_MESSAGE}</span>
         </Box>

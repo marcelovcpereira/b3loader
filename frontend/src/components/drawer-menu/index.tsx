@@ -81,12 +81,6 @@ const closedStyle = {
   
 }
 
-const listStyle = {
-  color: "#84846c",
-  "hover":"color:blue"
-}
-
-
 const resolver: CSSVariablesResolver = (theme) => ({
   variables: {
     '--mantine-hero-height': theme.other.heroHeight,
