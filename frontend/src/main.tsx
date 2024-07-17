@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import Root from "./routes/root";
 import ErrorPage from "./routes/error-page";
-
+import '@mantine/charts/styles.css';
 
 import {
   createBrowserRouter,
