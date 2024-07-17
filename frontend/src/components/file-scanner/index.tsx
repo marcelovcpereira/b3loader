@@ -114,26 +114,29 @@ const handleUpdate = () => {
   let label = api.data && api.data.length > 0 ? "select a file to import" : "no files found"
   return (
     <Box>
-        <h2>{AVAILABLE_FILES_MESSAGE}</h2>
+        <h2 style={{fontSize:"27px",color:"#6f7380", fontFamily:"tahoma", textAlign:"left"}}>{AVAILABLE_FILES_MESSAGE}</h2>
         <Radio.Group
             id="radioGroupTAG"
             value={value}
             onChange={setValue}
             label={label}
             description=""
-            style={{margin:"auto", marginBottom:"15px"}}
+            labelProps={{style:{marginBottom:"10px"}}}
+            style={{margin:"auto", marginBottom:"15px", textAlign:"left"}}
         >
             <Grid>
                 {cards}
             </Grid>
         </Radio.Group>
       
+        <div style={{float:"left"}}>
         <Button className="buttons" onClick={handleUpdate}>
             Refresh
         </Button>
         <Button className="buttons" onClick={handleImport} style={{marginLeft:"15px"}}>
             Import
         </Button>
+        </div>
     </Box>
   );
 }

@@ -80,7 +80,7 @@ const FileUploader = () => {
 
   return (
     <div style={{width:"500px"}}>
-      <h2>{UPLOAD_QUOTES_MESSAGE}</h2>
+      <h2 style={{fontSize:"27px",color:"#6f7380", fontFamily:"tahoma", textAlign:"left"}}>{UPLOAD_QUOTES_MESSAGE}</h2>
       
       <h3 style={{fontSize:fontSize}}>{progress > 0 && progress < 100 && <Loader color="blue" style={{marginRight:"20px"}}/>} {status}</h3>
       {progress > 0 && <Progress value={progress} style={{display:"block", marginBottom:"20px"}}/>}
@@ -94,7 +94,7 @@ const FileUploader = () => {
                 mt="md"
                 onChange={setSelectedFile}
                 value={selectedFile}
-                style={{marginTop:"0px",minWidth:"200px",maxWidth:"250px", maxHeight:"40px", margin: "auto"}}
+                style={{marginTop:"0px",minWidth:"200px",maxWidth:"250px", maxHeight:"40px", margin: "auto", marginLeft:"0px", marginRight:"10px"}}
             />
             <Button 
                 className="buttons"

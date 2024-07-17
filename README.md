@@ -96,6 +96,8 @@ Visit [http://localhost:9000](http://localhost:9000) after running  `make compos
 
 ![B3 Loader Frontend2](https://github.com/marcelovcpereira/b3loader/blob/master/b3loader-front2.png?raw=true)
 
+![B3 Loader Frontend3](https://github.com/marcelovcpereira/b3loader/blob/master/b3loader-front3.png?raw=true)
+
 ## InfluxDB Database
 
 The influxdb data can be visualized directly if you visit:

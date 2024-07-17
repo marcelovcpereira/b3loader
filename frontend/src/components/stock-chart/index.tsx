@@ -35,8 +35,8 @@ export default function StockChart(props: StockChartProps) {
         <>
             {/* Selected Stock Name Label  */}
             <div style={{width: "100%", height:"60px"}}>
-                <div style={{float:"left", width:"20%", height:"100%", borderRadius:"50%", borderColor:"black"}}>
-                    <span style={{fontFamily:"tahoma", fontSize:"27px", fontWeight:"bold", position: "relative", top:"20%"}}>{props.stockName.toUpperCase()}</span>
+                <div style={{float:"left", width:"20%", height:"100%"}}>
+                    <span style={{color:"#6f7380", fontFamily:"tahoma", fontSize:"27px", fontWeight:"bold", position: "relative", top:"20%"}}>{props.stockName.toUpperCase()}</span>
                 </div>
             </div>
             {/* Chart */}

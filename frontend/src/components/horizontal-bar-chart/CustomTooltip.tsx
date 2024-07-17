@@ -34,8 +34,8 @@ function parseMoney(money: number): string {
 
 export default function CustomTooltip(props:any) {
   const { active, payload } = props;
-  let qtyIndex = 0
-  let valIndex = 1
+  let qtyIndex = 1
+  let valIndex = 0
   if (active) {
     return (
       <div className="area-chart-tooltip" style={style}>

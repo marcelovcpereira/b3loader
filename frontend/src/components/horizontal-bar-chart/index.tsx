@@ -58,7 +58,7 @@ export default function HorizontalBarChart() {
     <Box>
     <BarChart reverseStackOrder={true} width={600} height={350} data={orderedData} layout='horizontal'>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name"/>
+        <XAxis dataKey="name" tick={{ fill: '#6f7380', fontFamily:"monospace", fontWeight:"bold" }}/>
         <YAxis yAxisId="0" dataKey='uv' width={100} tickMargin={5} ticks={getTicksFromValues(data)}tickFormatter={(value: any) => { return parseMoney(value)}} style={{fontFamily:"sans-serif"}}/>
         <Tooltip formatter={parseMoney} content={<CustomTooltip />}/>
         <Legend />
