@@ -103,11 +103,8 @@ const tooltipProperties = {
   
 }
 
-
 export default function DrawerMenu() {
-  
   const [open, setOpen] = React.useState(false);
-
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -121,7 +118,6 @@ export default function DrawerMenu() {
   } else {
     tooltipProperties.style.display = "block"
   }
-  
   
   return (
     <MantineProvider

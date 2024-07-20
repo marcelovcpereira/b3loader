@@ -3,31 +3,13 @@ import { Radio, Group, Grid, Text, Button, Box } from '@mantine/core';
 import classes from './file-scanner.module.css';
 import {IconFileText, IconFileTypeZip} from '@tabler/icons-react';
 import { BackendAPI } from '../../api/base';
+import { Helper } from '../../helper';
 
 const AVAILABLE_FILES_MESSAGE = "Available Files for Import"
 
 export interface FileScannerProps {
   api: BackendAPI
 }
-
-function humanFileSize(bytes:any, dp=1) {
-    const thresh = 1000;
-  
-    if (Math.abs(bytes) < thresh) {
-      return bytes + ' B';
-    }
-  
-    const units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']    
-    let u = -1;
-    const r = 10**dp;
-  
-    do {
-      bytes /= thresh;
-      ++u;
-    } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
-  
-    return bytes.toFixed(dp) + ' ' + units[u];
-  }
 
 const dataReducer = (state:any, action:any) => {
   switch (action.type) {
@@ -97,7 +79,7 @@ export default function FileScanner(props: FileScannerProps) {
             <Radio.Indicator key={item.name} />{item.type == "application/zip" ? zipIcon : txtIcon }
             <div>
                 <Text className={classes.label}>{item.name}</Text>
-                <Text className={classes.description}>{humanFileSize(item.sizeBytes)}</Text>
+                <Text className={classes.description}>{Helper.humanFileSize(item.sizeBytes)}</Text>
                 
                 <Text className={classes.description}>{item.type}</Text>
             </div>
@@ -105,9 +87,8 @@ export default function FileScanner(props: FileScannerProps) {
         </Radio.Card>
     </Grid.Col>
   )): <></>;
-
    
-   useEffect(() => {
+  useEffect(() => {
     updateList()
   }, []);
 

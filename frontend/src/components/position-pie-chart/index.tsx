@@ -1,6 +1,6 @@
-import { useCallback, useState } from "react";
 import { PieChart, Pie, Sector } from "recharts";
 import { data } from './data'
+import { Helper } from "../../helper";
 
 export type DataItem = {
   name: string;
@@ -8,30 +8,7 @@ export type DataItem = {
   pv: number;
 }
 
-function parseMoney(money: number): string {
-  let curr = "R$"
-  return curr + addDots(money.toFixed(2).replace(".", ","))
-}
-
-function addDots(val: string): string {
-  let ret = ""
-  let parts = val.split(",")
-  let intPart = parts[0]
-  let decimalPart = parts[1]
-  let pos = 1
-  for (let i = intPart.length - 1; i >= 0; i--) {
-      if ((pos%4) == 0) {
-          ret = "." + ret
-          pos++
-      }
-      
-      ret = intPart[i] + ret
-      pos++
-  }
-  return (ret + "," + decimalPart)
-}
-
-const renderActiveShape = (props: any) => {
+const renderShape = (props: any) => {
   console.log("PIE PROPS:", props)
   const RADIAN = Math.PI / 180;
   const {
@@ -57,11 +34,16 @@ const renderActiveShape = (props: any) => {
   const ey = my;
   const textAnchor = cos >= 0 ? "start" : "end";
   
+  const totalSum = data.map(e => e.uv).reduce((accumulator, currentValue) => accumulator + currentValue, 0);  
   return (
     <g>
-      {/* <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
-        {payload.name}
-      </text> */}
+      <text x={cx} y={cy-20} dy={8} textAnchor="middle" fill={fill} style={{fontWeight:"bold"}}>
+        Total:
+      </text>
+      <text x={cx} y={cy+5} dy={8} textAnchor="middle" fill={fill}>
+        
+        {Helper.parseMoney(totalSum)}
+      </text>
       <Sector
         cx={cx}
         cy={cy}
@@ -72,15 +54,6 @@ const renderActiveShape = (props: any) => {
         fill={fill}
         stroke="white"
       />
-      {/* <Sector
-        cx={cx}
-        cy={cy}
-        startAngle={startAngle}
-        endAngle={endAngle}
-        innerRadius={outerRadius + 6}
-        outerRadius={outerRadius + 10}
-        fill={fill}
-      /> */}
       <path
         d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
         stroke={fill}
@@ -102,26 +75,18 @@ const renderActiveShape = (props: any) => {
         textAnchor={textAnchor}
         fill="#999"
       >
-       {parseMoney(value)}{`  (${(percent * 100).toFixed(2)}%)`}
+       {Helper.parseMoney(value)}{`  (${(percent * 100).toFixed(2)}%)`}
       </text>
     </g>
   );
 };
 
 export default function PositionPieChart() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const onPieEnter = useCallback(
-    (_, index) => {
-      setActiveIndex(index);
-    },
-    [setActiveIndex]
-  );
-
   return (
     <PieChart width={550} height={400}>
       <Pie
         activeIndex={[...Array(data.length).keys()]}
-        activeShape={renderActiveShape}
+        activeShape={renderShape}
         data={data}
         cx={240}
         cy={150}
@@ -129,9 +94,7 @@ export default function PositionPieChart() {
         outerRadius={80}
         fill="#84846c"
         dataKey="uv"
-        paddingAngle={5}
-        //onMouseEnter={onPieEnter}
-        
+        paddingAngle={5}        
       />
     </PieChart>
   );
