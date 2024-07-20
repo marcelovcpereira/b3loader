@@ -4,20 +4,24 @@ import { Container, Box } from '@mantine/core';
 import FileUploader from '../components/file-uploader';
 import FileScanner from "../components/file-scanner";
 import PageHeader from "../components/page-header";
-export default function UploadPage() {
+import { BackendAPI } from "../api/base";
+export interface UploadPageProps {
+    api: BackendAPI
+  }
+export default function UploadPage(props: UploadPageProps) {
     return (
         <MantineProvider defaultColorScheme="light">
             <PageHeader title='Upload & Import' />
             <Container id="uploadRoot" style={{padding:"0px", width:"1300px", height:"500px"}}>
                 <Box id="uploader" style={{marginBottom: "30px"}}>
-                    <FileUploader />
+                    <FileUploader api={props.api}/>
                 </Box>
 
                 <Divider my="md" />
 
                 <Box id="scanner">
                     <Box>
-                        <FileScanner />
+                        <FileScanner api={props.api}/>
                     </Box>
                 </Box>
 

@@ -11,16 +11,17 @@ import {
 } from "react-router-dom";
 import UploadPage from './routes/upload-page';
 import PositionPage from './routes/position';
-
+import { BackendAPIClient } from './api/b3loader';
+const api = new BackendAPIClient()
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Root />,
+    element: <Root api={api}/>,
     errorElement: <ErrorPage />,
   },
   {
     path: "/upload",
-    element: <UploadPage />,
+    element: <UploadPage api={api}/>,
     errorElement: <ErrorPage />,
   },
   {

@@ -2,18 +2,20 @@ import { useState } from "react";
 import { Button, FileInput, Progress, Loader } from "@mantine/core";
 import { IconFile } from '@tabler/icons-react';
 import './button.css'
+import { BackendAPI } from "../../api/base";
 
 const UPLOAD_QUOTES_MESSAGE = "Upload quote files in B3 format"
 
-const FileUploader = () => {
-    const uploadURL = "http://localhost:8080/api/v1/quotes/upload"
+export interface FileUploaderProps {
+  api: BackendAPI
+}
+
+const FileUploader = (props: FileUploaderProps) => {
     const icon = <IconFile style={{ width: "15px", height: "15px" }} stroke={1.5} />;
-    
     const chunkSize = 5 * 1024 * 1024; // 5MB
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [status, setStatus] = useState("");
     const [progress, setProgress] = useState(0);
-
 
     const handleClean = () => {
         setSelectedFile(null)
@@ -21,7 +23,7 @@ const FileUploader = () => {
         setProgress(0)
     };
 
-  const handleFileUpload = () => {
+  const handleFileUpload = async () => {
     if (!selectedFile) {
       alert("Please select a file to upload.");
       return;
@@ -37,36 +39,21 @@ const FileUploader = () => {
     const uploadNextChunk = async () => {
       if (chunkNumber <= totalChunks) {
         const chunk = (selectedFile as File).slice(start, end, (selectedFile as File).type);
-        const formData = new FormData();
-        formData.append("chunk", chunk);
-        formData.append("chunkNumber", chunkNumber.toString());
-        formData.append("totalChunks", totalChunks.toString());
-        formData.append("originalname", (selectedFile as File).name);
-        if (uploadID != "") {
-            formData.append("uuid", uploadID)
+        let response = await props.api.uploadFileChunk(chunk, chunkNumber, totalChunks, (selectedFile as File).name, uploadID)
+        if (response.error) {
+          console.error("Error uploading chunk:", response.error);
+        } else if (response.data) {
+          uploadID = response.data.uuid!
+          let percent = Math.round(chunkNumber/totalChunks*100)
+          const temp = `${percent}%`;
+          setStatus(temp);
+          setProgress(Number((chunkNumber) * chunkProgress));
+          console.log(temp);
+          chunkNumber++;
+          start = end;
+          end = start + chunkSize;
+          uploadNextChunk()
         }
-        fetch(uploadURL, {
-            method: "POST",
-            body: formData,
-        }).then(
-            (response) => response.json()
-        ).then((data) => {
-            console.log({ data });
-            uploadID = data.uuid
-            let percent = Math.round(chunkNumber/totalChunks*100)
-            const temp = `${percent}%`;
-            setStatus(temp);
-            setProgress(Number((chunkNumber) * chunkProgress));
-            console.log(temp);
-            chunkNumber++;
-            start = end;
-            end = start + chunkSize;
-            uploadNextChunk();
-        })
-        .catch((error) => {
-            console.error("Error uploading chunk:", error);
-        });
-
       } else {
         setProgress(100);
         setSelectedFile(null);

@@ -2,27 +2,12 @@ import { useEffect, useReducer, useState } from 'react';
 import { Radio, Group, Grid, Text, Button, Box } from '@mantine/core';
 import classes from './file-scanner.module.css';
 import {IconFileText, IconFileTypeZip} from '@tabler/icons-react';
+import { BackendAPI } from '../../api/base';
 
 const AVAILABLE_FILES_MESSAGE = "Available Files for Import"
 
-const listFiles = () => {
-  let url = `http://localhost:8080/api/v1/quotes/file/list`
-  console.log("FETCHING", url)
-  return fetch(url)
-      .then(response => {
-        return response.json()
-      })
-      .catch(error => console.log('error', error))
-}
-
-const importFile = (name:string) => {
-  let url = `http://localhost:8080/api/v1/quotes/file/${name}/import`
-  console.log("FETCHING", url)
-  return fetch(url, {method:"POST"})
-      .then(response => {
-        return response.json()
-      })
-      .catch(error => console.log('error', error))
+export interface FileScannerProps {
+  api: BackendAPI
 }
 
 function humanFileSize(bytes:any, dp=1) {
@@ -45,49 +30,64 @@ function humanFileSize(bytes:any, dp=1) {
   }
 
 const dataReducer = (state:any, action:any) => {
-    switch (action.type) {
-      case "LOADING":
-      return { ...state, loading: true, error: false, data: null };
-      case "LOADED":
-      return { ...state, loading: false, error: false, data: action.payload };
-      case "ERROR":
-      return { ...state, loading: false, error: true, data: null };
-      case "NOT_FOUND":
-      return { ...state, loading: false, error: false, data: null };
-      default:
-      return state;
-    }
-  };
+  switch (action.type) {
+    case "LOADING":
+    return { ...state, loading: true, error: false, data: null };
+    case "LOADED":
+      console.log("LOADED", action)
+    return { ...state, loading: false, error: false, data: JSON.parse(action.payload) };
+    case "ERROR":
+    return { ...state, loading: false, error: true, data: null };
+    case "NOT_FOUND":
+    return { ...state, loading: false, error: false, data: null };
+    default:
+    return state;
+  }
+};
 
-export default function FileScanner() {
+enum FileScannerActionType {
+  LOADING = 'LOADING',
+  LOADED = 'LOADED',
+  ERROR = "ERROR",
+  NOT_FOUND = "NOT_FOUND"
+}
+export type FileScannerState = {
+  loading: boolean;
+  error: boolean;
+  data: File[] | []
+}
+
+export type FileScannerAction = {
+  type: FileScannerActionType,
+  payload: File[] | []
+}
+
+export default function FileScanner(props: FileScannerProps) {
   const zipIcon = <IconFileTypeZip />
   const txtIcon = <IconFileText />
   const [value, setValue] = useState<string | null>(null);
-  const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false,data: null});
+  const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false, data: null});
 
   const handleImport = () => {
-    console.log("importing",value)
-    importFile(value as string)
-}
-const handleUpdate = () => {
+    props.api.importFile(value as string)
+  }
+  const handleUpdate = () => {
     updateList()
-}
-  const updateList = () => {
-    dispatch({ type: "LOADING" });
-    listFiles()
-      .then((res:any) => {
-        if (res && res.data) {
-          let files = JSON.parse(res.data)
-          dispatch({ type: "LOADED", payload: files });
-        } else {
-          dispatch({ type: "NOT_FOUND" });
-        }
-        
-      })
-      .catch((err: Error) => {
-        console.log(err)
-        dispatch({ type: "ERROR" });
-      });
+  }
+  const updateList = async () => {
+    dispatch({ type: FileScannerActionType.LOADING });
+    let response = await props.api.listFiles()
+    if (response.error) {
+      console.log(response.error)
+      dispatch({ type: FileScannerActionType.ERROR });
+    } else if (response.data) {
+      let data = response.data.data
+      if (data.length > 0) {
+        dispatch({ type: FileScannerActionType.LOADED, payload: data });
+      } else {
+        dispatch({ type: FileScannerActionType.NOT_FOUND });
+      } 
+    }
 }
 
   const cards = api.data? api.data.map((item:any) => (

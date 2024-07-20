@@ -7,31 +7,13 @@ import { Loader } from '@mantine/core';
 import { Alert } from '@mantine/core';
 import SearchInput from '../search-input';
 import StockChart from '../stock-chart';
+import { BackendAPI } from '../../api/base';
 
-const API_URL = "http://localhost:8080"
 const NO_DATA_FOUND_MESSAGE = "No data found"
 const ERROR_MESSAGE = "Error searching quote data"
 
-console.log("VITE ENV:", import.meta.env) // "123"
-
-const searchQuotesFromStock = (stock: string) => {
-  let url = `${API_URL}/api/v1/quotes/${stock}`
-  console.log("FETCHING", url)
-  console.log("API",import.meta.env.VITE_B3LOADER_URL) // "123"
-  console.log("FOLDER",import.meta.env.VITE_DIRECTORY_PATH) // "123"
-
-  return fetch(url)
-      .then(response => response.json())
-      .catch(error => console.log('error', error))
-}
-const searchStock = (stock: string) => {
-  let url = `${API_URL}/api/v1/stocks/${stock}`
-  console.log("FETCHING", url)
-  return fetch(url)
-      .then(response => {
-        return response.json()
-      })
-      .catch(error => console.log('error', error))
+export interface SearchableStockChartProps {
+  api: BackendAPI
 }
 
 const dataReducer = (state:any, action:any) => {
@@ -49,14 +31,14 @@ const dataReducer = (state:any, action:any) => {
   }
 };
 
-export default function SearchableStockChart() {  
+export default function SearchableStockChart(props: SearchableStockChartProps) {  
   // Selected Stock Label 
   const [stock, setStock] = useState("TAEE11"); 
   // Input search word
   const [searchTerm, setSearchTerm] = useState('')
   
   // Autocomplete list and dropdown
-  const [stockList, setStockList] = useState([]); 
+  const [stockList, setStockList] = useState([] as string[]); 
   const combobox = useCombobox();
 
   // Chart
@@ -66,24 +48,23 @@ export default function SearchableStockChart() {
   
   // Updates the chart with a new Stock by name. 
   // It searches the daily quotes of automatically and updates the visualization
-  const updateChart = (stockName: string) => {
+  const updateChart = async (stockName: string) => {
     dispatch({ type: "LOADING" });
-    searchQuotesFromStock(stockName)
-      .then((res:any) => {
-        if (res && res.data) {
-          res.data.forEach((d:any) => {
-            d.Date = moment(d.Date).valueOf();
-          });
-          dispatch({ type: "LOADED", payload: res.data });
-        } else {
-          dispatch({ type: "NOT_FOUND" });
-        }
-        
-      })
-      .catch((err: Error) => {
-        console.log(err)
-        dispatch({ type: "ERROR" });
-      });
+    let response = await props.api.searchQuotesFromStock(stockName)
+    if (response.error != undefined) {
+      console.log("SearchableStockChart: Error updateChart", response.error)
+      dispatch({ type: "ERROR" })
+    } else if (response.data != undefined) {
+      let data = response.data.data
+      if (data.length > 0) {
+        data.forEach((d:any) => {
+          d.Date = moment(d.Date).valueOf();
+        });
+        dispatch({ type: "LOADED", payload: data });
+      } else {
+        dispatch({ type: "NOT_FOUND" });
+      }
+    }
   }
 
   const selectDropdownValue = (val: string) => {
@@ -95,18 +76,20 @@ export default function SearchableStockChart() {
 
   // Called every time "searchTerm" is updated (delayed).
   // It searches the possible stock names matching and updates the dropdown list
-  const updateSearch = (name: string) => {
+  const updateSearch = async (name: string) => {
     if (name.trim() != "") {
-      searchStock(name).then(res => {
-        if (res && res.data && res.data.length > 0) {
-          setStockList(res.data)
+      let response = await props.api.searchStock(name)
+      if (response.error != undefined) {
+        console.log("SearchableStockChart: Error updateSearch", response.error)
+      } else if (response.data != undefined) {
+        let data = response.data.data as string[]
+        if (data.length > 0) {
+          setStockList(data)
           combobox.openDropdown()
         } else {
-          console.log("unexpected", res)
+          console.log("unexpected", response)
         }
-      }).catch((err: Error)=>{
-        console.log("er", err)
-      })
+      }
     }
   }
 

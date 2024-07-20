@@ -1,4 +1,4 @@
-import { DEFAULT_THEME, Grid, MantineProvider, Title, getGradient, useMantineTheme } from "@mantine/core"
+import { DEFAULT_THEME, Grid, MantineProvider, Title, getGradient } from "@mantine/core"
 
 export interface HeaderProps {
     title: string

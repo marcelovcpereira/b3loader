@@ -115,6 +115,9 @@ func (h *Handler) listFiles() []B3File {
 	}
 
 	for _, file := range files {
+		if file.IsDir() || strings.HasPrefix(file.Name(), "chunks") {
+			continue
+		}
 		if strings.HasPrefix(file.Name(), ".") {
 			continue
 		}
