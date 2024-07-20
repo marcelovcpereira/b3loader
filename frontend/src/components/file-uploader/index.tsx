@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button, FileInput, Progress, Loader } from "@mantine/core";
 import { IconFile } from '@tabler/icons-react';
-import './button.css'
+import classes from './button.module.css'
 import { BackendAPI } from "../../api/base";
+import { ThemeColor } from "../../helper";
 
 const UPLOAD_QUOTES_MESSAGE = "Upload quote files in B3 format"
 
@@ -16,16 +17,18 @@ const FileUploader = (props: FileUploaderProps) => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [status, setStatus] = useState("");
     const [progress, setProgress] = useState(0);
+    const [err, setErr] = useState<string | null>(null);
 
     const handleClean = () => {
         setSelectedFile(null)
         setStatus("")
         setProgress(0)
+        setErr("")
     };
 
   const handleFileUpload = async () => {
     if (!selectedFile) {
-      alert("Please select a file to upload.");
+      setErr("❌ No file selected")
       return;
     }
     
@@ -71,6 +74,17 @@ const FileUploader = (props: FileUploaderProps) => {
       
       <h3 style={{fontSize:fontSize}}>{progress > 0 && progress < 100 && <Loader color="blue" style={{marginRight:"20px"}}/>} {status}</h3>
       {progress > 0 && <Progress value={progress} style={{display:"block", marginBottom:"20px"}}/>}
+      <h3
+          style={{
+            fontSize:"15px",
+            color: ThemeColor.DARK_RED, 
+            fontFamily:"tahoma", 
+            textAlign:"left",
+            backgroundColor: ThemeColor.LIGHT_RED
+          }}
+        >
+          { err != null ? err : "" }
+        </h3>
       <div style={{width:"100%", display:"flex", marginTop:"0px"}}>
             <FileInput
                 clearable
@@ -84,14 +98,14 @@ const FileUploader = (props: FileUploaderProps) => {
                 style={{marginTop:"0px",minWidth:"200px",maxWidth:"250px", maxHeight:"40px", margin: "auto", marginLeft:"0px", marginRight:"10px"}}
             />
             <Button 
-                className="buttons"
+                className={classes.buttons}
                 onClick={handleClean}
                 style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px"}}
             >
                 Clear
             </Button> 
             <Button 
-                className="buttons"
+                className={classes.blueButtons}
                 onClick={handleFileUpload}
                 style={{marginTop:"0px",maxWidth:"150px", maxHeight:"40px",marginLeft:"5px"}}
             >

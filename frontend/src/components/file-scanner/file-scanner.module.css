@@ -41,3 +41,12 @@
     color: #ffffff;
     font-weight: bold;
   }
+
+  .blueButtons {
+    background-color: #9ea4b7;
+    color: #ffffff;
+  }
+  .blueButtons:hover {
+    background-color: #6f7380;
+    color: #ffffff;
+  }

@@ -1,3 +1,12 @@
+export enum ThemeColor {
+  PRIMARY = '#b7b79e',
+  DARK_RED = '#b79e9e',
+  LIGHT_BLUE = '#9ea4b7',
+  SECONDARY = '#84846c',
+  LIGHT_RED = '#e9e2e2',
+  DARK_BLUE = '#6f7380'
+}
+
 export class Helper {
   static humanFileSize = (bytes:number, dp=1): string => {
     const thresh = 1000;
@@ -48,16 +57,17 @@ export class Helper {
     let end = ordered[ordered.length-1]
     let tickInterval = Math.floor((end - start)/totalTicks)
     let currTick = 0
+    let sum = values.reduce((a,b) => {return a+b})
     while(currTick <= end) {
         ticks.push(currTick)
         currTick += tickInterval
     }
+    ticks.push(sum)
     console.log(`Defined UV ${ticks.length} ticks: ${ticks.join(",")}`)
     return ticks
   }
 
   static getTicksFromDateList(values: Date[]): number[] {
-    console.log("DATELIST", values)
     let ticks: number[] = []
     let startYear: number = values[0].getFullYear()
     let endYear: number = values[values.length-1].getFullYear()
@@ -79,5 +89,9 @@ export class Helper {
     let start = values[0]
     let end = values[values.length-1]
     return [start.valueOf(), end.valueOf()]
+  }
+
+  static getThemeColors(): string[] {
+    return Object.values(ThemeColor)
   }
 }

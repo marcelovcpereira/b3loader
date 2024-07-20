@@ -1,4 +1,4 @@
-import { PieChart, Pie, Sector } from "recharts";
+import { PieChart, Pie, Sector, Cell } from "recharts";
 import { data } from './data'
 import { Helper } from "../../helper";
 
@@ -7,6 +7,8 @@ export type DataItem = {
   uv: number;
   pv: number;
 }
+
+const COLORS = Helper.getThemeColors()
 
 const renderShape = (props: any) => {
   console.log("PIE PROPS:", props)
@@ -95,7 +97,13 @@ export default function PositionPieChart() {
         fill="#84846c"
         dataKey="uv"
         paddingAngle={5}        
-      />
+      >
+        {
+          data.map((_, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))
+        }  
+      </Pie>
     </PieChart>
   );
 }

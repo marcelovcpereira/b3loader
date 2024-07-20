@@ -3,7 +3,7 @@ import { Radio, Group, Grid, Text, Button, Box } from '@mantine/core';
 import classes from './file-scanner.module.css';
 import {IconFileText, IconFileTypeZip} from '@tabler/icons-react';
 import { BackendAPI } from '../../api/base';
-import { Helper } from '../../helper';
+import { Helper, ThemeColor } from '../../helper';
 
 const AVAILABLE_FILES_MESSAGE = "Available Files for Import"
 
@@ -48,12 +48,19 @@ export default function FileScanner(props: FileScannerProps) {
   const zipIcon = <IconFileTypeZip />
   const txtIcon = <IconFileText />
   const [value, setValue] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
   const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false, data: null});
 
   const handleImport = () => {
-    props.api.importFile(value as string)
+    let val = value as string
+    if (val && val != "") {
+      props.api.importFile(value as string)
+    } else {
+      setErr("❌ No file selected")
+    }
   }
   const handleUpdate = () => {
+    setErr("")
     updateList()
   }
   const updateList = async () => {
@@ -95,14 +102,34 @@ export default function FileScanner(props: FileScannerProps) {
   let label = api.data && api.data.length > 0 ? "select a file to import" : "no files found"
   return (
     <Box>
-        <h2 style={{fontSize:"27px",color:"#6f7380", fontFamily:"tahoma", textAlign:"left"}}>{AVAILABLE_FILES_MESSAGE}</h2>
+        <h2 
+          style={{
+            fontSize:"27px",
+            color: ThemeColor.DARK_BLUE, 
+            fontFamily:"tahoma", 
+            textAlign:"left"
+          }}
+        >
+          {AVAILABLE_FILES_MESSAGE}
+        </h2>
+        <h3
+          style={{
+            fontSize:"15px",
+            color: ThemeColor.DARK_RED, 
+            fontFamily:"tahoma", 
+            textAlign:"left",
+            backgroundColor: ThemeColor.LIGHT_RED
+          }}
+        >
+          { err != null ? err : "" }
+        </h3>
         <Radio.Group
             id="radioGroupTAG"
             value={value}
             onChange={setValue}
             label={label}
             description=""
-            labelProps={{style:{marginBottom:"10px"}}}
+            labelProps={{style:{marginBottom:"10px", color: ThemeColor.DARK_BLUE}}}
             style={{margin:"auto", marginBottom:"15px", textAlign:"left"}}
         >
             <Grid>
@@ -111,10 +138,10 @@ export default function FileScanner(props: FileScannerProps) {
         </Radio.Group>
       
         <div style={{float:"left"}}>
-        <Button className="buttons" onClick={handleUpdate}>
+        <Button className={classes.buttons} onClick={handleUpdate}>
             Refresh
         </Button>
-        <Button className="buttons" onClick={handleImport} style={{marginLeft:"15px"}}>
+        <Button className={classes.blueButtons} onClick={handleImport} style={{marginLeft:"15px"}}>
             Import
         </Button>
         </div>
