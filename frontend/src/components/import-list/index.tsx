@@ -158,6 +158,7 @@ const ImportList = (props: ImportListProps) => {
       return () => {
         clearIntervals()
       };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
       const itemStyle = {

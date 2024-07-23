@@ -1,0 +1,43 @@
+.periodButton {
+  background-color: transparent !important;
+  color: #9ea4b7 !important;
+  margin:auto !important;
+  width:40px !important; 
+  max-width: 40px !important;
+  padding: 4px !important;
+  font-size: 13px !important; 
+  text-align: center !important;
+  font-family: monospace;
+}
+  
+.periodButton:hover{
+  color: #84846c !important;
+  cursor: pointer !important;
+  border-color: #84846c !important;
+  background-color: transparent !important;
+  p {font-weight: 600 !important;}
+}
+
+.periodButtonSelected{
+  background-color: transparent !important;
+  color: #84846c !important;
+  border-color: #84846c !important;
+  margin:auto !important;
+  width:40px !important; 
+  max-width: 40px !important;
+  padding: 4px !important;
+  font-size: 13px !important; 
+  text-align: center !important;
+  font-family: monospace;
+}
+
+.periodButton p, .periodButtonSelected p {
+  font-size: 13px;
+  display: inline;
+  font-family: monospace;
+  font-weight: 600 !important;
+}
+
+#periodGridCol div {
+  display: inline !important; 
+}

@@ -104,6 +104,7 @@ export default function FileScanner(props: FileScannerProps) {
    
   useEffect(() => {
     updateList()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const label = api.data && api.data.length > 0 ? "select a file to import" : "no files found"

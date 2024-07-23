@@ -18,8 +18,8 @@ export class BackendAPIClient implements BackendAPI {
     }
     return ret
   }
-  searchQuotesFromStock = async (stock: string) => {
-    const url = backendAPIURL + `quotes/${stock}`
+  searchQuotesFromStock = async (stock: string, period: string) => {
+    const url = backendAPIURL + `quotes/${stock}?period=${period}`
     console.log(`API: GET ${url}`)
     const ret: BackendResponse = { data: undefined, error: undefined }
     try {

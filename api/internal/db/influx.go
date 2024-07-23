@@ -110,15 +110,17 @@ func (db *InfluxQuoteDB) Close() {
 	db.Client.Close()
 }
 
-func (db *InfluxQuoteDB) GetStockValues(stockName string) []common.StockValue {
+func (db *InfluxQuoteDB) GetStockValues(stockName string, period common.QuoteQueryPeriod) []common.StockValue {
 	measurement := "daily_quote"
 	var stocks []common.StockValue
 	query := fmt.Sprintf(
-		`from(bucket: "%s")|> range(start: -3y)|> filter(fn: (r) => r["_measurement"] == "%s")|> filter(fn: (r) => r["StockName"] == "%s")|> filter(fn: (r) => r["_field"] == "LastPrice")`,
+		`from(bucket: "%s")|> range(start: %s)|> filter(fn: (r) => r["_measurement"] == "%s")|> filter(fn: (r) => r["StockName"] == "%s")|> filter(fn: (r) => r["_field"] == "LastPrice")|> yield(name: "last")`,
 		db.Config.InfluxBucket,
+		period,
 		measurement,
 		stockName,
 	)
+
 	fmt.Printf("DB: Executing query: '%s'", query)
 	queryApi := db.Client.QueryAPI(db.Config.InfluxORG)
 	result, err := queryApi.Query(context.Background(), query)
@@ -127,8 +129,6 @@ func (db *InfluxQuoteDB) GetStockValues(stockName string) []common.StockValue {
 			if result.TableChanged() {
 				fmt.Printf("table: %s\n", result.TableMetadata().String())
 			}
-			fmt.Printf("stock: %v\n", result.Record().ValueByKey("StockName"))
-			fmt.Printf("value: %v\n", result.Record().Value())
 			value := (result.Record().Value()).(float64)
 			stocks = append(stocks, common.StockValue{
 				Date:  result.Record().Time(),
@@ -148,7 +148,7 @@ func (db *InfluxQuoteDB) SearchStocks(stockName string) []string {
 	var stocks []string
 	tag := "StockName"
 	limit := 10
-	query := fmt.Sprintf(` import "influxdata/influxdb/schema" 
+	query := fmt.Sprintf(`import "influxdata/influxdb/schema" 
  schema.tagValues(bucket: "%s", tag: "%s")
 |> filter(fn: (r) => r._value =~ /%s/) 
 |> limit(n:%d)`,

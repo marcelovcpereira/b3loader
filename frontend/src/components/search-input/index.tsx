@@ -1,9 +1,6 @@
 
-import { Combobox } from '@mantine/core';
-import { MantineProvider } from '@mantine/core';
-import { TextInput, rem } from '@mantine/core';
+import { Combobox, MantineProvider, TextInput, rem, ComboboxStore } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
-import { ComboboxStore } from '@mantine/core';
 
 export interface SearchInputProps {
     valuesList: string[]
@@ -38,7 +35,7 @@ export default function SearchInput(props: SearchInputProps) {
                         leftSectionPointerEvents="none"
                         leftSection={icon}
                         label=""
-                        style={{margin:"auto", width:"250px", height:"45px", fontSize: "100px"}}  
+                        style={{width:"250px", height:"45px", fontSize: "100px", marginBottom: "15px"}}  
                         onChange={(e) => {
                             if (props.onChangeCallback != null) {
                                 props.onChangeCallback(e.target.value)
@@ -57,7 +54,7 @@ export default function SearchInput(props: SearchInputProps) {
                             <Combobox.Option value={value}>{value}</Combobox.Option>
                         )) 
                         : 
-                        <Combobox.Empty>Nenhuma ação encontrada.</Combobox.Empty>
+                        <Combobox.Empty>No stock found.</Combobox.Empty>
                     }
                     </Combobox.Options>
                 </Combobox.Dropdown>

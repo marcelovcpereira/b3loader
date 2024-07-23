@@ -230,6 +230,23 @@ func ImportJobToInfluxPoint(job common.ImportJob) *write.Point {
 	return point
 }
 
+func ParseQuoteQueryPeriod(str string) common.QuoteQueryPeriod {
+	switch strings.ToLower(str) {
+	case "1y":
+		return common.Last1Year
+	case "6mo":
+		return common.Last6Months
+	case "2y":
+		return common.Last2Years
+	case "3y":
+		return common.Last3Years
+	case "5y":
+		return common.Last5Years
+	default:
+		return common.Last1Year
+	}
+}
+
 func ParseImportJobStatus(str string) common.ImportJobStatus {
 	switch strings.ToLower(str) {
 	case "running", "job_running":

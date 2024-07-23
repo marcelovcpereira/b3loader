@@ -93,7 +93,7 @@ func (c Config) GetFilePath(name string) string {
 type QuoteDB interface {
 	Connect()
 	PersistQuotes(quotes []DailyQuote) error
-	GetStockValues(stockName string) []StockValue
+	GetStockValues(stockName string, period QuoteQueryPeriod) []StockValue
 	SearchStocks(stockName string) []string
 	Close()
 	PersistEquitiesPositions(positions []external_apis.EquitiesPositionsEntity) error
@@ -108,12 +108,19 @@ type StockValue struct {
 }
 
 type ImportJobStatus string
+type QuoteQueryPeriod string
 
 const (
 	JobCreated  ImportJobStatus = "JOB_CREATED"
 	JobRunning  ImportJobStatus = "JOB_RUNNING"
 	JobFailed   ImportJobStatus = "JOB_FAILED"
 	JobFinished ImportJobStatus = "JOB_FINISHED"
+
+	Last1Year   QuoteQueryPeriod = "-1y"
+	Last6Months QuoteQueryPeriod = "-6mo"
+	Last2Years  QuoteQueryPeriod = "-2y"
+	Last3Years  QuoteQueryPeriod = "-3y"
+	Last5Years  QuoteQueryPeriod = "-5y"
 )
 
 type ImportJob struct {

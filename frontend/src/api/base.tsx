@@ -42,7 +42,7 @@ export interface BackendAPI {
     listFiles: () => Promise<BackendResponse>;
     listImports: () => Promise<BackendResponse>;
     importFile: (name: string) => Promise<BackendResponse>;
-    searchQuotesFromStock: (stock: string) => Promise<BackendResponse>;
+    searchQuotesFromStock: (stock: string, period: string) => Promise<BackendResponse>;
     searchStock: (name: string) => Promise<BackendResponse>;
     uploadFileChunk: (chunk: Blob, chunkNumber: number, totalChunks: number, originalName: string, uploadID: string) => Promise<BackendUploadResponse>;
 }

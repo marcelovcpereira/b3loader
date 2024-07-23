@@ -93,8 +93,8 @@ func (h *Handler) HandleGetQuotes(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	stock := strings.ToUpper(req.PathValue("stockName"))
-
-	stocks := h.DB.GetStockValues(stock)
+	period := util.ParseQuoteQueryPeriod(strings.ToLower(req.URL.Query().Get("period")))
+	stocks := h.DB.GetStockValues(stock, period)
 	fmt.Printf("Handler: Found %d stocks for %s. Converting...\n", len(stocks), stock)
 	fmt.Printf("Handler: Marshalling to json %d stocks...\n", len(stocks))
 	ret, err := json.Marshal(stocks)
@@ -104,7 +104,6 @@ func (h *Handler) HandleGetQuotes(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	response := fmt.Sprintf(okResponse, ret)
-	fmt.Printf("Handler: Returning %v\n", response)
 	w.Write([]byte(response))
 	elapsed := time.Since(start)
 	fmt.Printf("Handler: quotes returned in %s", elapsed)
@@ -139,7 +138,7 @@ func (h *Handler) updateJob(job common.ImportJob, status common.ImportJobStatus,
 	ret.Message = msg
 	ret.Status = status
 	ret.Id = job.Id
-	ret.Date = time.Now()
+	ret.Date = job.Date
 	ret.DurationSeconds = job.DurationSeconds + int64(time.Now().Sub(job.Date).Seconds())
 	ret.Progress = progress
 	ret.FileName = job.FileName

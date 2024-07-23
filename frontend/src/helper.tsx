@@ -70,20 +70,22 @@ export class Helper {
     return ticks
   }
 
+  static getMonthsOldDate(start: Date, months: number): Date {
+    return new Date(start.setMonth(start.getMonth() + months))
+  }
+
   static getTicksFromDateList(values: Date[]): number[] {
     const ticks: number[] = []
-    let startYear: number = values[0].getFullYear()
-    const endYear: number = values[values.length-1].getFullYear()
-    while(startYear <= endYear) {
-        const yearStr = startYear.toString() + "-01-01T00:00:00"
-        const d = Date.parse(yearStr).valueOf()
-        ticks.push(d)
-
-        const yearStr6 = startYear.toString() + "-07-01T00:00:00"
-        const d6 = Date.parse(yearStr6).valueOf()
-        ticks.push(d6)
-        startYear++
+    const monthInterval = 2
+    let start: Date = values[0]
+    const end: Date = values[values.length-1]
+    ticks.push(start.valueOf())
+    start = this.getMonthsOldDate(start, monthInterval)
+    while(start < end) {
+        ticks.push(start.valueOf())
+        start = this.getMonthsOldDate(start, monthInterval)
     }
+    ticks.push(end.valueOf())
     console.log(`Defined ${ticks.length} ticks: ${ticks.join(",")}`)
     return ticks
   }
@@ -91,7 +93,9 @@ export class Helper {
     values.sort((a, b) => (a < b ? -1 : 1))
     const start = values[0]
     const end = values[values.length-1]
-    return [start.valueOf(), end.valueOf()]
+    const ret = [start.valueOf(), end.valueOf()]
+    console.log("FINAL DOMAIN", [start,end],ret)
+    return ret
   }
 
   static getThemeColors(): string[] {

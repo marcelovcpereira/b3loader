@@ -8,6 +8,7 @@ import SearchInput from '../search-input';
 import StockChart from '../stock-chart';
 import { BackendAPI, Quote } from '../../api/base';
 import { Reducer, useEffect, useReducer, useState } from 'react';
+import StockChartHeader from '../stock-chart-header';
 
 const NO_DATA_FOUND_MESSAGE = "No data found"
 const ERROR_MESSAGE = "Error searching quote data"
@@ -51,7 +52,16 @@ const dataReducer: Reducer<State, Action> = (state:State, action:Action) => {
 
 export default function SearchableStockChart(props: SearchableStockChartProps) {  
   // Selected Stock Label 
-  const [stock, setStock] = useState("TAEE11"); 
+  const [stock, setStock] = useState("BBAS3"); 
+
+  // Selected Period
+  const [period, setPeriod] = useState("1y"); 
+
+  const updatePeriod = (periodo: string) => {
+    console.log("UPDATING PERIOD...", periodo)
+    setPeriod(periodo)
+    updateChart(stock, periodo)
+  }
   // Input search word
   const [searchTerm, setSearchTerm] = useState('')
   
@@ -66,9 +76,10 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
   
   // Updates the chart with a new Stock by name. 
   // It searches the daily quotes of automatically and updates the visualization
-  const updateChart = async (stockName: string) => {
+  const updateChart = async (stockName: string, periodo?: string) => {
     dispatch({ type: ActionType.LOADING, payload: undefined });
-    const response = await props.api.searchQuotesFromStock(stockName)
+    console.log("PERIOD FOR QUERY", periodo)
+    const response = await props.api.searchQuotesFromStock(stockName, periodo? periodo : period)
     if (response.error != undefined) {
       console.log("SearchableStockChart: Error updateChart", response.error)
       dispatch({ type: ActionType.ERROR })
@@ -113,43 +124,59 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
 
   const RenderLoading = () => {
     return (
+      <div  style={{marginLeft:"40px"}}>
       <MantineProvider defaultColorScheme="light">
+        {RenderInput()}
         <Loader color="blue" style={{marginLeft:"20px", marginTop:"5px"}}/>
       </MantineProvider>
+      </div>
     )
   }
 
   const RenderError = () => {
     return (
+      <div  style={{marginLeft:"40px"}}>
       <MantineProvider defaultColorScheme="light">
+        {RenderInput()}
         <Alert variant="outline" color="red" title="Erro inesperado" icon={infoIcon}>
           {ERROR_MESSAGE}
         </Alert>
       </MantineProvider>
+      </div>
     )
   }
 
   const RenderChart = () => {
     return (
-      <>
-      <SearchInput 
-        combobox={combobox} 
-        valuesList={stockList}
-        onChangeCallback={setSearchTerm}
-        onSelectValueCallback={selectDropdownValue}
-      />
-      <StockChart data={api.data} stockName={stock}/>
-    </>
+      <div  style={{marginLeft:"40px"}}>
+        {RenderInput()}
+        <StockChartHeader data={api.data} stockName={stock} period={period} setPeriod={updatePeriod}/>
+        <StockChart data={api.data} stockName={stock}/>
+    </div>
+    )
+  }
+
+  const RenderInput = () => {
+    return (
+        <SearchInput 
+          combobox={combobox} 
+          valuesList={stockList}
+          onChangeCallback={setSearchTerm}
+          onSelectValueCallback={selectDropdownValue}
+        />
     )
   }
 
   const RenderNoData = () => {
     return (
+      <div  style={{marginLeft:"40px"}}>
       <MantineProvider defaultColorScheme="light">
-        <Box>
+        <Box style={{width:"900px",height:"400px", marginLeft:"15px", marginTop:"5px"}}>
+        {RenderInput()}
           <span>{NO_DATA_FOUND_MESSAGE}</span>
         </Box>
       </MantineProvider>
+      </div>
     )
   }
   
@@ -170,12 +197,11 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
   return (
     api.loading ? 
       RenderLoading()
-    : api.error ? 
+    :api.error ? 
       RenderError()
-    : api.data && api.data.length > 0 ? 
+    :api.data && api.data.length > 0 ? 
       RenderChart() 
-    : 
-      RenderNoData()
+    : RenderNoData()
   )
 }
   

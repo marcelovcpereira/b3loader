@@ -3,6 +3,7 @@ import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'rec
 import CustomTooltip from './CustomTooltip';
 import { Helper } from '../../helper';
 import { Quote } from '../../api/base';
+import { MantineProvider } from '@mantine/core';
 
 export interface StockChartProps {
     stockName: string
@@ -11,13 +12,8 @@ export interface StockChartProps {
 
 export default function StockChart(props: StockChartProps) {
     return (
-        <>
-            {/* Selected Stock Name Label  */}
-            <div style={{width: "100%", height:"60px"}}>
-                <div style={{float:"left", width:"20%", height:"100%"}}>
-                    <span style={{color:"#6f7380", fontFamily:"tahoma", fontSize:"27px", fontWeight:"bold", position: "relative", top:"20%"}}>{props.stockName.toUpperCase()}</span>
-                </div>
-            </div>
+        <MantineProvider defaultColorScheme="light">
+            
             {/* Chart */}
             <AreaChart
                 width={900}
@@ -26,7 +22,7 @@ export default function StockChart(props: StockChartProps) {
                 margin={{
                 top: 5,
                 right: 30,
-                left: 60,
+                left: 15,
                 bottom: 5,
                 }}
             >
@@ -34,7 +30,7 @@ export default function StockChart(props: StockChartProps) {
                 <XAxis
                     scale="time"
                     type="number"
-                    dataKey = 'Date'
+                    dataKey='Date'
                     tickFormatter = {(timestamp) => moment(timestamp).format('DD/MM/YYYY')}
                     tick={{strokeWidth: 1}}
                     ticks={Helper.getTicksFromDateList(props.data.map(e=>new Date(e.Date)))}
@@ -58,9 +54,9 @@ export default function StockChart(props: StockChartProps) {
                     tickMargin={5}
                     tickSize={5}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip active={false} payload={[]} />} />
                 <Line yAxisId={10} type="linear" dataKey="Value" stroke="#8884d8" />
             </AreaChart>
-        </>
+        </MantineProvider>
     )
 }
