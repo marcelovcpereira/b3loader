@@ -32,7 +32,7 @@ const FileUploader = (props: FileUploaderProps) => {
       return;
     }
     
-    let totalChunks = Math.ceil((selectedFile as File).size / chunkSize);
+    const totalChunks = Math.ceil((selectedFile as File).size / chunkSize);
     const chunkProgress = 100 / totalChunks;
     let chunkNumber = 1;
     let start = 0;
@@ -42,12 +42,12 @@ const FileUploader = (props: FileUploaderProps) => {
     const uploadNextChunk = async () => {
       if (chunkNumber <= totalChunks) {
         const chunk = (selectedFile as File).slice(start, end, (selectedFile as File).type);
-        let response = await props.api.uploadFileChunk(chunk, chunkNumber, totalChunks, (selectedFile as File).name, uploadID)
+        const response = await props.api.uploadFileChunk(chunk, chunkNumber, totalChunks, (selectedFile as File).name, uploadID)
         if (response.error) {
           console.error("Error uploading chunk:", response.error);
         } else if (response.data) {
           uploadID = response.data.uuid!
-          let percent = Math.round(chunkNumber/totalChunks*100)
+          const percent = Math.round(chunkNumber/totalChunks*100)
           const temp = `${percent}%`;
           setStatus(temp);
           setProgress(Number((chunkNumber) * chunkProgress));
@@ -66,7 +66,7 @@ const FileUploader = (props: FileUploaderProps) => {
     uploadNextChunk();
   };
 
-  let fontSize = progress > 0 && progress < 100 ? "35px" : "20px"
+  const fontSize = progress > 0 && progress < 100 ? "35px" : "20px"
 
   return (
     <div style={{width:"500px"}}>

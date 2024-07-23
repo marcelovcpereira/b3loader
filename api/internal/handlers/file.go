@@ -3,9 +3,11 @@ package handlers
 import (
 	"archive/zip"
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	external_apis "github.com/marcelovcpereira/b3loader/api/internal/external-apis"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -26,6 +28,7 @@ const QuoteFilePrefix = "99COTAHIST"
 type Handler struct {
 	Config common.Config
 	DB     common.QuoteDB
+	B3     external_apis.B3API
 }
 
 type Chunk struct {
@@ -131,16 +134,79 @@ func (h *Handler) listFiles() []B3File {
 	return ret
 }
 
+func (h *Handler) updateJob(job common.ImportJob, status common.ImportJobStatus, msg string, progress float64) common.ImportJob {
+	var ret common.ImportJob
+	ret.Message = msg
+	ret.Status = status
+	ret.Id = job.Id
+	ret.Date = time.Now()
+	ret.DurationSeconds = job.DurationSeconds + int64(time.Now().Sub(job.Date).Seconds())
+	ret.Progress = progress
+	ret.FileName = job.FileName
+	ret.Sort = job.Sort + 1
+	h.DB.PersistJob(ret)
+	return ret
+}
+
+func (h *Handler) createImportJob(uuid string, file string) common.ImportJob {
+	job := common.ImportJob{
+		Id:              uuid,
+		Date:            time.Now(),
+		FileName:        file,
+		Status:          common.JobCreated,
+		Progress:        0,
+		Message:         "Job created",
+		DurationSeconds: 0,
+		Sort:            0,
+	}
+	h.DB.PersistJob(job)
+	return job
+}
+
+func lineCounter(r io.Reader) (int, error) {
+	buf := make([]byte, 32*1024)
+	count := 0
+	lineSep := []byte{'\n'}
+
+	for {
+		c, err := r.Read(buf)
+		count += bytes.Count(buf[:c], lineSep)
+
+		switch {
+		case err == io.EOF:
+			return count, nil
+
+		case err != nil:
+			return count, err
+		}
+	}
+}
+
+func getProgress(lines int, totalLines int) float64 {
+	return float64(lines) / float64(totalLines) * 100
+}
+
 func (h *Handler) processFile(fileName string) {
+	job := h.createImportJob(uuid.New().String(), fileName)
 	filePath := h.Config.GetFilePath(fileName)
 	newPath, err := h.checkZip(filePath)
+	job = h.updateJob(job, common.JobRunning, "Extracting...", 0)
 	if err != nil {
 		fmt.Printf("Handler: ERROR EXTRACTING FILE: %v\n", err)
+		h.updateJob(job, common.JobFailed, err.Error(), 0)
 		return
 	}
 	readFile, err := os.Open(newPath)
 	if err != nil {
 		fmt.Printf("Handler: ERROR OPENING FILE: %v\n", err)
+		h.updateJob(job, common.JobFailed, err.Error(), 0)
+		return
+	}
+	readFile2, _ := os.Open(newPath)
+	totalLines, err := lineCounter(readFile2)
+	if err != nil {
+		fmt.Printf("Handler: ERROR COUNTING FILE LINES: %v\n", err)
+		h.updateJob(job, common.JobFailed, err.Error(), 0)
 		return
 	}
 	fileScanner := bufio.NewScanner(readFile)
@@ -148,17 +214,19 @@ func (h *Handler) processFile(fileName string) {
 
 	if !fileScanner.Scan() {
 		fmt.Printf("Handler: ERROR SCANNING FILE: %v\n", fileScanner.Err())
+		h.updateJob(job, common.JobFailed, "Error scanning file", 0)
 		return
 	}
 	firstLine := fileScanner.Text()
 	fmt.Printf("Handler: File information: %s\n", firstLine)
-
 	var quotesBuffer []common.DailyQuote
 	totalQuotes := 0
 	batchCount := 0
 	cutoffDate := util.ParseDate(h.Config.CutoffDate)
+	scannedLines := 1
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
+		scannedLines++
 		if strings.HasPrefix(line, QuoteFilePrefix) {
 			break
 		}
@@ -179,6 +247,7 @@ func (h *Handler) processFile(fileName string) {
 			fmt.Printf("Handler: Batch #%d: Saved %d quotes. Total %d, sleeping %ds...\n", batchCount, len(quotesBuffer), totalQuotes, h.Config.DefaultSleepSeconds)
 			time.Sleep(time.Duration(h.Config.DefaultSleepSeconds) * time.Second)
 			quotesBuffer = []common.DailyQuote{}
+			job = h.updateJob(job, common.JobRunning, "Reading file...", getProgress(scannedLines, totalLines))
 		}
 
 	}
@@ -195,9 +264,11 @@ func (h *Handler) processFile(fileName string) {
 	h.DB.Close()
 	fmt.Printf("Loaded %d quotes\n", totalQuotes)
 	readFile.Close()
+
 	if newPath != filePath {
 		os.Remove(newPath)
 	}
+	h.updateJob(job, common.JobFinished, "File imported", 100)
 }
 
 func (h *Handler) checkZip(path string) (string, error) {
@@ -408,4 +479,46 @@ func (h *Handler) getFileType(file fs.FileInfo) string {
 		return "application/zip"
 	}
 	return strings.Split(name, ".")[1]
+}
+
+func (h *Handler) HandleGetPosition(writer http.ResponseWriter, request *http.Request) {
+	okResponse := "{\"status\":\"ok\", \"code\":200, \"data\": \"%s\"}"
+	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": \"%s\"}"
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Header().Set("Access-Control-Allow-Origin", "*")
+
+	document := strings.ToUpper(request.PathValue("document"))
+
+	api := external_apis.B3API{}
+	resp, err := api.GetEquitiesPositionByDate(document, time.Now().Add(-24*time.Hour), time.Now())
+	if err != nil {
+		errorResponse = fmt.Sprintf(errorResponse, err.Error())
+		writer.Write([]byte(errorResponse))
+		return
+	}
+	fmt.Printf("RESPONSE:::::::: %v", resp)
+	h.DB.PersistEquitiesPositions(resp.Data.EquitiesPositions)
+	okResponse = fmt.Sprintf(okResponse, resp)
+	writer.Write([]byte(okResponse))
+}
+
+func (h *Handler) HandleListImports(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
+	writer.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var ret []common.ImportJob
+	okResponse := "{\"status\":\"ok\", \"code\":200, \"data\": %s}"
+	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": \"%s\"}"
+	jobs := h.DB.ListJobIds()
+	for _, job := range jobs {
+		last := h.DB.GetLastJobStatus(job)
+		ret = append(ret, last)
+	}
+	json, err := json.Marshal(ret)
+	if err != nil {
+		errorResponse = fmt.Sprintf(errorResponse, err.Error())
+		writer.Write([]byte(errorResponse))
+	}
+	okResponse = fmt.Sprintf(okResponse, json)
+	writer.Write([]byte(okResponse))
 }

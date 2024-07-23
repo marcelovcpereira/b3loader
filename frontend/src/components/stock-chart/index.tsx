@@ -2,10 +2,11 @@ import moment from 'moment'
 import { AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import CustomTooltip from './CustomTooltip';
 import { Helper } from '../../helper';
+import { Quote } from '../../api/base';
 
 export interface StockChartProps {
     stockName: string
-    data: any[]
+    data: Quote[]
 }
 
 export default function StockChart(props: StockChartProps) {

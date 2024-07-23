@@ -1,6 +1,7 @@
 import { PieChart, Pie, Sector, Cell } from "recharts";
 import { data } from './data'
-import { Helper } from "../../helper";
+import { Helper, ThemeColor } from "../../helper";
+import { PieSectorDataItem } from "recharts/types/polar/Pie";
 
 export type DataItem = {
   name: string;
@@ -8,10 +9,19 @@ export type DataItem = {
   pv: number;
 }
 
+type Payload = {
+  cx: number
+  cy: number
+  fill: string
+  name: string
+  payload: unknown[]
+  pv: number
+  stroke: string
+  uv: number
+}
 const COLORS = Helper.getThemeColors()
 
-const renderShape = (props: any) => {
-  console.log("PIE PROPS:", props)
+const renderShape = (props: PieSectorDataItem) => {
   const RADIAN = Math.PI / 180;
   const {
     cx,
@@ -26,24 +36,24 @@ const renderShape = (props: any) => {
     percent,
     value
   } = props;
-  const sin = Math.sin(-RADIAN * midAngle);
-  const cos = Math.cos(-RADIAN * midAngle);
-  const sx = cx + (outerRadius + 10) * cos;
-  const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
+  const sin = Math.sin(-RADIAN * midAngle!);
+  const cos = Math.cos(-RADIAN * midAngle!);
+  const sx = cx! + (outerRadius! + 10) * cos;
+  const sy = cy! + (outerRadius! + 10) * sin;
+  const mx = cx! + (outerRadius! + 30) * cos;
+  const my = cy! + (outerRadius! + 30) * sin;
   const ex = mx + (cos >= 0 ? 1 : -1) * 22;
   const ey = my;
   const textAnchor = cos >= 0 ? "start" : "end";
+  const { name } = payload! as unknown as Payload
   
   const totalSum = data.map(e => e.uv).reduce((accumulator, currentValue) => accumulator + currentValue, 0);  
   return (
     <g>
-      <text x={cx} y={cy-20} dy={8} textAnchor="middle" fill={fill} style={{fontWeight:"bold"}}>
+      <text x={cx} y={cy!-20} dy={8} textAnchor="middle" fill={ThemeColor.DARK_BLUE} style={{fontWeight:"bold"}}>
         Total:
       </text>
-      <text x={cx} y={cy+5} dy={8} textAnchor="middle" fill={fill}>
-        
+      <text x={cx} y={cy!+5} dy={8} textAnchor="middle" fill={ThemeColor.DARK_BLUE}>
         {Helper.parseMoney(totalSum)}
       </text>
       <Sector
@@ -66,18 +76,18 @@ const renderShape = (props: any) => {
         x={ex + (cos >= 0 ? 1 : -1) * 12}
         y={ey}
         textAnchor={textAnchor}
-        fill="#6f7380"
-        fontWeight={600}
-      >{payload.name}</text>
+        fill={ThemeColor.DARK_BLUE}
+        fontWeight={800}
+      >{name}</text>
      
       <text
         x={ex + (cos >= 0 ? 1 : -1) * 12}
         y={ey}
         dy={18}
         textAnchor={textAnchor}
-        fill="#999"
+        fill={ThemeColor.DARK_BLUE}
       >
-       {Helper.parseMoney(value)}{`  (${(percent * 100).toFixed(2)}%)`}
+       {Helper.parseMoney(value!)}{`  (${(percent! * 100).toFixed(2)}%)`}
       </text>
     </g>
   );

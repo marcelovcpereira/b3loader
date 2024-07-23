@@ -1,0 +1,11 @@
+.refresh {
+  /* margin-left: 15px; */
+  width: 25px;
+  height: auto;
+  color: #6f7380;
+  }
+  
+  .refresh:hover{
+    color: #b7b79e;
+    cursor: pointer;
+  }

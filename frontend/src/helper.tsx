@@ -4,7 +4,10 @@ export enum ThemeColor {
   LIGHT_BLUE = '#9ea4b7',
   SECONDARY = '#84846c',
   LIGHT_RED = '#e9e2e2',
-  DARK_BLUE = '#6f7380'
+  DARK_BLUE = '#6f7380',
+  DARK_GREEN = '#5c8d68',
+  LIGHT_GREEN = '#82be90',
+  WHITE = '#ffffff'
 }
 
 export class Helper {
@@ -28,15 +31,15 @@ export class Helper {
   }
 
   static parseMoney = (money: number): string => {
-    let curr = "R$"
+    const curr = "R$"
     return curr + Helper.addDots(money.toFixed(2).replace(".", ","))
   }
 
   static addDots = (val: string): string => {
     let ret = ""
-    let parts = val.split(",")
-    let intPart = parts[0]
-    let decimalPart = parts[1]
+    const parts = val.split(",")
+    const intPart = parts[0]
+    const decimalPart = parts[1]
     let pos = 1
     for (let i = intPart.length - 1; i >= 0; i--) {
         if ((pos%4) == 0) {
@@ -50,14 +53,14 @@ export class Helper {
   }
 
   static getTicksFromNumberList(values: number[]): number[] {
-    let ticks: number[] = []
-    let totalTicks = 6
-    let ordered = values.sort((a, b) => (a < b ? -1 : 1));
-    let start = ordered[0]
-    let end = ordered[ordered.length-1]
-    let tickInterval = Math.floor((end - start)/totalTicks)
+    const ticks: number[] = []
+    const totalTicks = 6
+    const ordered = values.sort((a, b) => (a < b ? -1 : 1));
+    const start = ordered[0]
+    const end = ordered[ordered.length-1]
+    const tickInterval = Math.floor((end - start)/totalTicks)
     let currTick = 0
-    let sum = values.reduce((a,b) => {return a+b})
+    const sum = values.reduce((a,b) => {return a+b})
     while(currTick <= end) {
         ticks.push(currTick)
         currTick += tickInterval
@@ -68,16 +71,16 @@ export class Helper {
   }
 
   static getTicksFromDateList(values: Date[]): number[] {
-    let ticks: number[] = []
+    const ticks: number[] = []
     let startYear: number = values[0].getFullYear()
-    let endYear: number = values[values.length-1].getFullYear()
+    const endYear: number = values[values.length-1].getFullYear()
     while(startYear <= endYear) {
-        let yearStr = startYear.toString() + "-01-01T00:00:00"
-        let d = Date.parse(yearStr).valueOf()
+        const yearStr = startYear.toString() + "-01-01T00:00:00"
+        const d = Date.parse(yearStr).valueOf()
         ticks.push(d)
 
-        let yearStr6 = startYear.toString() + "-07-01T00:00:00"
-        let d6 = Date.parse(yearStr6).valueOf()
+        const yearStr6 = startYear.toString() + "-07-01T00:00:00"
+        const d6 = Date.parse(yearStr6).valueOf()
         ticks.push(d6)
         startYear++
     }
@@ -86,8 +89,8 @@ export class Helper {
   }
   static getDomainFromDateList(values: Date[]): number[] {
     values.sort((a, b) => (a < b ? -1 : 1))
-    let start = values[0]
-    let end = values[values.length-1]
+    const start = values[0]
+    const end = values[values.length-1]
     return [start.valueOf(), end.valueOf()]
   }
 

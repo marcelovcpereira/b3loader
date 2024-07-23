@@ -1,9 +1,12 @@
 package util
 
 import (
+	"encoding/json"
+	"fmt"
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/marcelovcpereira/b3loader/api/internal/common"
+	external_apis "github.com/marcelovcpereira/b3loader/api/internal/external-apis"
 	"math"
 	"math/big"
 	"strconv"
@@ -119,7 +122,6 @@ func DailyQuoteToStockValue(quote common.DailyQuote) common.StockValue {
 		Date:  quote.Date,
 		Value: quote.LastPrice,
 	}
-
 }
 
 func DailyQuoteToInfluxPoint(quote common.DailyQuote) *write.Point {
@@ -153,6 +155,50 @@ func DailyQuoteToInfluxPoint(quote common.DailyQuote) *write.Point {
 		SetTime(quote.Date)
 }
 
+func EquitiesPositionToInfluxPoint(position external_apis.EquitiesPositionsEntity) *write.Point {
+	return influxdb2.NewPointWithMeasurement("equity_position").
+		AddTag("DocumentNumber", Trim(position.DocumentNumber)).
+		AddTag("StockName", Trim(position.TickerSymbol)).
+		AddField("ProductCategoryName", position.ProductCategoryName).
+		AddField("ProductTypeName", position.ProductTypeName).
+		AddField("MarkingIndicator", position.MarkingIndicator).
+		AddField("TickerSymbol", Trim(position.TickerSymbol)).
+		AddField("CorporationName", position.CorporationName).
+		AddField("SpecificationCode", position.SpecificationCode).
+		AddField("ParticipantName", position.ParticipantName).
+		AddField("ParticipantDocumentNumber", position.ParticipantDocumentNumber).
+		AddField("EquitiesQuantity", position.EquitiesQuantity).
+		AddField("ClosingPrice", position.ClosingPrice).
+		AddField("UpdateValue", position.UpdateValue).
+		AddField("Isin", position.Isin).
+		AddField("DistributionIdentification", position.DistributionIdentification).
+		AddField("BookkeeperName", position.BookkeeperName).
+		AddField("AvailableQuantity", position.AvailableQuantity).
+		AddField("UnavailableQuantity", position.UnavailableQuantity).
+		AddField("AdministratorName", position.AdministratorName).
+		AddField("ParticipantCode", position.ParticipantCode).
+		AddField("AccountNumber", position.AccountNumber).
+		AddField("Reasons", stringifyReasons(position.Reasons)).
+		SetTime(ParseDate(position.ReferenceDate))
+}
+
+func EquitiesPositionsToInfluxPoint(positions []external_apis.EquitiesPositionsEntity) []*write.Point {
+	var points []*write.Point
+	for _, position := range positions {
+		point := EquitiesPositionToInfluxPoint(position)
+		points = append(points, point)
+	}
+	return points
+}
+
+func stringifyReasons(reasons []external_apis.ReasonsEntity) string {
+	ret, err := json.Marshal(reasons)
+	if err != nil {
+		panic(err)
+	}
+	return string(ret)
+}
+
 func FIIAnalysis(fii string) {
 	//PVP, DY, Vacancia < 10%, Alavancagem , pagamento estavel
 }
@@ -168,4 +214,33 @@ func GrahamPrice(lpa float64, vpa float64) float64 {
 func BasinPrice(dpa float64) float64 {
 	taxaBasicaRemuneracaoRendaFixa := 0.06
 	return dpa / taxaBasicaRemuneracaoRendaFixa
+}
+
+func ImportJobToInfluxPoint(job common.ImportJob) *write.Point {
+	point := influxdb2.NewPointWithMeasurement("import_job").
+		AddTag("Status", string(job.Status)).
+		AddTag("Id", job.Id).
+		AddTag("Sort", strconv.Itoa(job.Sort)).
+		AddField("Message", job.Message).
+		AddField("DurationSeconds", job.DurationSeconds).
+		AddField("FileName", job.FileName).
+		AddField("Progress", job.Progress).
+		SetTime(job.Date)
+	fmt.Printf("%v", point)
+	return point
+}
+
+func ParseImportJobStatus(str string) common.ImportJobStatus {
+	switch strings.ToLower(str) {
+	case "running", "job_running":
+		return common.JobRunning
+	case "created", "job_created":
+		return common.JobCreated
+	case "finished", "job_finished":
+		return common.JobFinished
+	case "failed", "job_failed":
+		return common.JobFailed
+	default:
+		return common.JobFailed
+	}
 }

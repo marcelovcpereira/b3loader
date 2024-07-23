@@ -7,7 +7,9 @@ import (
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 	"github.com/marcelovcpereira/b3loader/api/internal/common"
+	external_apis "github.com/marcelovcpereira/b3loader/api/internal/external-apis"
 	"github.com/marcelovcpereira/b3loader/api/internal/util"
+	"strconv"
 	"time"
 )
 
@@ -36,16 +38,28 @@ func (db *InfluxQuoteDB) PersistQuotes(quotes []common.DailyQuote) error {
 	fmt.Printf("DB: %s\n", quotes[len(quotes)-1].Date.Month())
 	points := util.DailyQuotesToInfluxPoints(quotes)
 	fmt.Printf("DB: Persisting %d points ...\n", len(points))
-	err := db.RetryableWritePoints(DefaultRetryAttempts, points)
+	err := db.RetryableWritePoints(DefaultRetryAttempts, points, db.Config.InfluxBucket)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (db *InfluxQuoteDB) RetryableWritePoints(attempts int, points []*write.Point) error {
+func (db *InfluxQuoteDB) createBucketIfNotExists(bucket string) {
+	_, err := db.Client.BucketsAPI().FindBucketByName(context.Background(), bucket)
+	if err != nil {
+		org, err := db.Client.OrganizationsAPI().GetOrganizations(context.Background())
+		if err != nil {
+			panic(err)
+		}
+		db.Client.BucketsAPI().CreateBucketWithName(context.Background(), &(*org)[0], bucket)
+	}
+}
+
+func (db *InfluxQuoteDB) RetryableWritePoints(attempts int, points []*write.Point, bucket string) error {
 	currentAttempt := 1
-	writeAPI := db.Client.WriteAPIBlocking(db.Config.InfluxORG, db.Config.InfluxBucket)
+	writeAPI := db.Client.WriteAPIBlocking(db.Config.InfluxORG, bucket)
+	db.createBucketIfNotExists(bucket)
 	defer writeAPI.Flush(context.Background())
 	backOff := DefaultBackoffIntervalSeconds
 	for currentAttempt <= attempts {
@@ -160,4 +174,116 @@ func (db *InfluxQuoteDB) SearchStocks(stockName string) []string {
 		fmt.Printf("DB: Error executing query: '%v'", err)
 	}
 	return stocks
+}
+
+func (db *InfluxQuoteDB) PersistEquitiesPositions(positions []external_apis.EquitiesPositionsEntity) error {
+	points := util.EquitiesPositionsToInfluxPoint(positions)
+	if len(points) > 0 {
+		fmt.Printf("DB: Persisting %d 'equities-positions' points ...\n", len(points))
+		err := db.RetryableWritePoints(DefaultRetryAttempts, points, db.Config.InfluxBucket)
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Printf("DB: No point to Persist ...\n")
+	}
+	return nil
+}
+
+func (db *InfluxQuoteDB) PersistJob(job common.ImportJob) error {
+	point := util.ImportJobToInfluxPoint(job)
+	err := db.RetryableWritePoints(DefaultRetryAttempts, []*write.Point{point}, "import_jobs")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (db *InfluxQuoteDB) GetLastJobStatus(id string) common.ImportJob {
+	var resultPoints map[string]common.ImportJob
+	resultPoints = make(map[string]common.ImportJob)
+
+	measurement := "import_job"
+	query := fmt.Sprintf(
+		`from(bucket: "%s")|> range(start: -3y)|> filter(fn: (r) => r["_measurement"] == "%s")|> filter(fn: (r) => r["Id"] == "%s")|>last()`,
+		"import_jobs",
+		measurement,
+		id,
+	)
+	queryApi := db.Client.QueryAPI(db.Config.InfluxORG)
+	result, err := queryApi.Query(context.Background(), query)
+
+	if err == nil {
+		for result.Next() {
+			sortVal := result.Record().ValueByKey("Sort").(string)
+			val, ok := resultPoints[sortVal]
+			if !ok {
+				val = common.ImportJob{}
+			}
+
+			val.Date = result.Record().ValueByKey("_time").(time.Time)
+			val.Status = util.ParseImportJobStatus(result.Record().ValueByKey("Status").(string))
+			val.Id = result.Record().ValueByKey("Id").(string)
+			val.Sort, _ = strconv.Atoi(sortVal)
+			switch field := result.Record().Field(); field {
+			case "Progress":
+				val.Progress = result.Record().Value().(float64)
+			case "Message":
+				val.Message = result.Record().Value().(string)
+			case "FileName":
+				val.FileName = result.Record().Value().(string)
+			case "DurationSeconds":
+				val.DurationSeconds = result.Record().Value().(int64)
+			default:
+				fmt.Printf("unrecognized field %s.\n", field)
+			}
+			resultPoints[sortVal] = val
+		}
+		if result.Err() != nil {
+			fmt.Printf("query parsing error: %s\n", result.Err().Error())
+		}
+	} else {
+		fmt.Printf("DB: Error executing query: '%v'", err)
+	}
+
+	lastIndex := 0
+	for i, _ := range resultPoints {
+		if resultPoints[i].Sort > lastIndex {
+			lastIndex, _ = strconv.Atoi(i)
+		}
+	}
+
+	return resultPoints[strconv.Itoa(lastIndex)]
+}
+
+func (db *InfluxQuoteDB) ListJobIds() []string {
+	var jobs []string
+	tag := "Id"
+	limit := 10
+	query := fmt.Sprintf(` import "influxdata/influxdb/schema" 
+ schema.measurementTagValues(bucket: "%s", tag: "%s", measurement: "%s")
+|> limit(n:%d)`,
+		"import_jobs",
+		tag,
+		"import_job",
+		limit,
+	)
+	queryApi := db.Client.QueryAPI(db.Config.InfluxORG)
+	result, err := queryApi.Query(context.Background(), query)
+
+	if err == nil {
+		for result.Next() {
+			fmt.Printf("value: %v\n", result.Record().Value())
+			value := (result.Record().Value()).(string)
+			fmt.Printf("value: %s", value)
+			jobs = append(jobs, value)
+		}
+		if result.Err() != nil {
+			fmt.Printf("query parsing error: %s\n", result.Err().Error())
+		}
+	} else {
+		fmt.Printf("DB: Error executing query: '%v'", err)
+	}
+	return jobs
 }

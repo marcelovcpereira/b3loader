@@ -6,8 +6,19 @@ const style = {
   color: "#fff"
 };
 
+type CustomTooltipProps = {
+  active: boolean
+  payload: Payload[]
+}
+
+type Payload = {
+  name: string
+  value: number
+  fill: string
+}
+
 function parseMoney(money: number): string {
-    let curr = "R$"
+    const curr = "R$"
     return curr + money.toFixed(2).toString()
 }
 
@@ -17,7 +28,7 @@ const options : Intl.DateTimeFormatOptions = {
   day: 'numeric',
 }
 
-export default function CustomTooltip(props:any) {
+export default function CustomTooltip(props:CustomTooltipProps) {
   const { active, payload } = props;
   if (active) {
     const currData = payload && payload.length ? payload[0].payload : null;

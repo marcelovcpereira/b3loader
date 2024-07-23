@@ -5,64 +5,79 @@ const backendAPIURL = "http://localhost:8080/api/v1/"
 
 export class BackendAPIClient implements BackendAPI {
   importFile = async (name:string) => {
-    let url = backendAPIURL + `quotes/file/${name}/import`
+    const url = backendAPIURL + `quotes/file/${name}/import`
     console.log(`API: POST ${url}`)
-    let ret: BackendResponse = { data: undefined, error: undefined }
+    const ret: BackendResponse = { data: undefined, error: undefined }
     try {
-      let response = await fetch(url, {method:"POST"})
-      let data = await response.json()
+      const response = await fetch(url, {method:"POST"})
+      const data = await response.json()
       ret.data = data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('API ERROR', error)
-      ret.error = error
+      ret.error = error as Error
     }
     return ret
   }
   searchQuotesFromStock = async (stock: string) => {
-    let url = backendAPIURL + `quotes/${stock}`
+    const url = backendAPIURL + `quotes/${stock}`
     console.log(`API: GET ${url}`)
-    let ret: BackendResponse = { data: undefined, error: undefined }
+    const ret: BackendResponse = { data: undefined, error: undefined }
     try {
-      let response = await fetch(url)
-      let data = await response.json()
+      const response = await fetch(url)
+      const data = await response.json()
       ret.data = data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('API ERROR', error)
-      ret.error = error
+      ret.error = error as Error
     }
     return ret
   }
   listFiles = async () => {
-    let url = backendAPIURL + "quotes/file/list"
+    const url = backendAPIURL + "quotes/file/list"
     console.log(`API: GET ${url}`)
-    let ret: BackendResponse = { data: undefined, error: undefined }
+    const ret: BackendResponse = { data: undefined, error: undefined }
     try {
-      let response = await fetch(url)
-      let data = await response.json()
+      const response = await fetch(url)
+      const data = await response.json()
       ret.data = data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log('API ERROR', error)
-      ret.error = error
+      ret.error = error as Error
     }
     console.log("listFiles: ", ret)
     return ret
   }
-  searchStock = async (name: string) => {
-    let url = backendAPIURL + `stocks/${name}`
+  listImports = async () => {
+    const url = backendAPIURL + "quotes/imports"
     console.log(`API: GET ${url}`)
-    let ret: BackendResponse = { data: undefined, error: undefined }
+    const ret: BackendResponse = { data: undefined, error: undefined }
     try {
-      let response = await fetch(url)
-      ret.data = await response.json()
-    } catch (error: any) {
+      const response = await fetch(url)
+      const data = await response.json()
+      ret.data = data
+    } catch (error: unknown) {
       console.log('API ERROR', error)
-      ret.error = error
+      ret.error = error as Error
+    }
+    console.log("listImports: ", ret)
+    return ret
+  }
+  searchStock = async (name: string) => {
+    const url = backendAPIURL + `stocks/${name}`
+    console.log(`API: GET ${url}`)
+    const ret: BackendResponse = { data: undefined, error: undefined }
+    try {
+      const response = await fetch(url)
+      ret.data = await response.json()
+    } catch (error: unknown) {
+      console.log('API ERROR', error)
+      ret.error = error as Error
     }
     return ret
   }  
   uploadFileChunk = async (chunk: Blob, chunkNumber: number, totalChunks: number, originalName: string, uploadID: string) => {
-    let url = backendAPIURL + "quotes/upload"
-    let ret: BackendUploadResponse = { data: undefined, error: undefined }
+    const url = backendAPIURL + "quotes/upload"
+    const ret: BackendUploadResponse = { data: undefined, error: undefined }
     const formData = new FormData();
     formData.append("chunk", chunk);
     formData.append("chunkNumber", chunkNumber.toString());
@@ -77,8 +92,8 @@ export class BackendAPIClient implements BackendAPI {
       response = await response.json()
       console.log("AFTERJSON", response)
       ret.data = response as UploadChunkResponse
-    } catch (error: any) {
-      ret.error = error
+    } catch (error: unknown) {
+      ret.error = error as Error
       console.log('!!!!!!!!!!API ERROR', error)
       console.log('!!!!!!!!!!API ERROR', error)
     }

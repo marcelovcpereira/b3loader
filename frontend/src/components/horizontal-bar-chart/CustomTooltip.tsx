@@ -6,12 +6,22 @@ const style = {
   color: "#000000"
 };
 
+type CustomTooltipProps = {
+  active: boolean
+  payload: Payload[]
+}
+
+type Payload = {
+  name: string
+  value: number
+  fill: string
+}
 
 function addDots(val: string): string {
   let ret = ""
-  let parts = val.split(",")
-  let intPart = parts[0]
-  let decimalPart = parts[1]
+  const parts = val.split(",")
+  const intPart = parts[0]
+  const decimalPart = parts[1]
 
   let pos = 1
   for (let i = intPart.length - 1; i >= 0; i--) {
@@ -27,19 +37,19 @@ function addDots(val: string): string {
 }
 
 function parseMoney(money: number): string {
-  let curr = "R$"
+  const curr = "R$"
   if (money === undefined) return ""
   return curr + addDots(money.toFixed(2).replace(".", ","))
 }
 
-export default function CustomTooltip(props:any) {
+export default function CustomTooltip(props:CustomTooltipProps) {
   const { active, payload } = props;
-  let qtyIndex = 1
-  let valIndex = 0
+  const qtyIndex = 1
+  const valIndex = 0
   if (active) {
     return (
       <div className="area-chart-tooltip" style={style}>
-        <h3>{payload && payload.length > 0 ? payload[0].payload.name : " -- "}</h3>
+        <h3>{payload && payload.length > 0 ? payload[0].name : " -- "}</h3>
         <span>
           {payload && payload.length > 0 ? <b style={{color:payload[valIndex].fill}}>{payload[valIndex].name + ": " + parseMoney(payload[valIndex].value)}</b> : <></>}
         </span>
@@ -52,4 +62,4 @@ export default function CustomTooltip(props:any) {
   }
 
   return null;
-};
+}

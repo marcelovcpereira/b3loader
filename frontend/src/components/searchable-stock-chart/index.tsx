@@ -1,4 +1,3 @@
-import { useEffect, useReducer, useState } from 'react';
 import moment from 'moment'
 import { Box, useCombobox } from '@mantine/core';
 import { MantineProvider } from '@mantine/core';
@@ -7,7 +6,8 @@ import { Loader } from '@mantine/core';
 import { Alert } from '@mantine/core';
 import SearchInput from '../search-input';
 import StockChart from '../stock-chart';
-import { BackendAPI } from '../../api/base';
+import { BackendAPI, Quote } from '../../api/base';
+import { Reducer, useEffect, useReducer, useState } from 'react';
 
 const NO_DATA_FOUND_MESSAGE = "No data found"
 const ERROR_MESSAGE = "Error searching quote data"
@@ -16,16 +16,34 @@ export interface SearchableStockChartProps {
   api: BackendAPI
 }
 
-const dataReducer = (state:any, action:any) => {
+enum ActionType {
+  LOADING = 'LOADING',
+  LOADED = 'LOADED',
+  ERROR = "ERROR",
+  NOT_FOUND = "NOT_FOUND"
+}
+export type State = {
+  loading: boolean;
+  error: boolean;
+  data: Quote[] | []
+}
+
+export type Action = {
+  type: ActionType,
+  payload?: Quote[]
+}
+
+
+const dataReducer: Reducer<State, Action> = (state:State, action:Action) => {
   switch (action.type) {
     case "LOADING":
-    return { ...state, loading: true, error: false, data: null };
+    return { ...state, loading: true, error: false, data: [] };
     case "LOADED":
-    return { ...state, loading: false, error: false, data: action.payload };
+    return { ...state, loading: false, error: false, data: action.payload! as Quote[] };
     case "ERROR":
-    return { ...state, loading: false, error: true, data: null };
+    return { ...state, loading: false, error: true, data: [] };
     case "NOT_FOUND":
-    return { ...state, loading: false, error: false, data: null };
+    return { ...state, loading: false, error: false, data: [] };
     default:
     return state;
   }
@@ -42,27 +60,27 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
   const combobox = useCombobox();
 
   // Chart
-  const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false,data: null});
+  const [api, dispatch] = useReducer(dataReducer, {loading: false,error: false, data: []});
   const infoIcon = <IconInfoCircle />;
   console.log("stockList:", stockList)
   
   // Updates the chart with a new Stock by name. 
   // It searches the daily quotes of automatically and updates the visualization
   const updateChart = async (stockName: string) => {
-    dispatch({ type: "LOADING" });
-    let response = await props.api.searchQuotesFromStock(stockName)
+    dispatch({ type: ActionType.LOADING, payload: undefined });
+    const response = await props.api.searchQuotesFromStock(stockName)
     if (response.error != undefined) {
       console.log("SearchableStockChart: Error updateChart", response.error)
-      dispatch({ type: "ERROR" })
+      dispatch({ type: ActionType.ERROR })
     } else if (response.data != undefined) {
-      let data = response.data.data
-      if (data.length > 0) {
-        data.forEach((d:any) => {
+      const data = response.data.data as Quote[]
+      if (data && data.length > 0) {
+        data.forEach((d:Quote) => {
           d.Date = moment(d.Date).valueOf();
         });
-        dispatch({ type: "LOADED", payload: data });
+        dispatch({ type: ActionType.LOADED, payload: data });
       } else {
-        dispatch({ type: "NOT_FOUND" });
+        dispatch({ type: ActionType.NOT_FOUND });
       }
     }
   }
@@ -78,11 +96,11 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
   // It searches the possible stock names matching and updates the dropdown list
   const updateSearch = async (name: string) => {
     if (name.trim() != "") {
-      let response = await props.api.searchStock(name)
+      const response = await props.api.searchStock(name)
       if (response.error != undefined) {
         console.log("SearchableStockChart: Error updateSearch", response.error)
       } else if (response.data != undefined) {
-        let data = response.data.data as string[]
+        const data = response.data.data as string[]
         if (data.length > 0) {
           setStockList(data)
           combobox.openDropdown()
@@ -154,7 +172,7 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
       RenderLoading()
     : api.error ? 
       RenderError()
-    : api.data ? 
+    : api.data && api.data.length > 0 ? 
       RenderChart() 
     : 
       RenderNoData()

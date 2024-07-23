@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	external_apis "github.com/marcelovcpereira/b3loader/api/internal/external-apis"
 	"math/big"
 	"os"
 	"time"
@@ -95,9 +96,33 @@ type QuoteDB interface {
 	GetStockValues(stockName string) []StockValue
 	SearchStocks(stockName string) []string
 	Close()
+	PersistEquitiesPositions(positions []external_apis.EquitiesPositionsEntity) error
+	PersistJob(job ImportJob) error
+	GetLastJobStatus(id string) ImportJob
+	ListJobIds() []string
 }
 
 type StockValue struct {
 	Date  time.Time
 	Value float64
+}
+
+type ImportJobStatus string
+
+const (
+	JobCreated  ImportJobStatus = "JOB_CREATED"
+	JobRunning  ImportJobStatus = "JOB_RUNNING"
+	JobFailed   ImportJobStatus = "JOB_FAILED"
+	JobFinished ImportJobStatus = "JOB_FINISHED"
+)
+
+type ImportJob struct {
+	Id              string
+	Date            time.Time
+	FileName        string
+	Status          ImportJobStatus
+	Progress        float64
+	Message         string
+	DurationSeconds int64
+	Sort            int
 }

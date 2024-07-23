@@ -1,6 +1,7 @@
 .root {
     position: relative;
-    padding: var(--mantine-spacing-md);
+    padding: var(--mantine-spacing-xs);
+    width: 100%;
     transition: border-color 150ms ease;
   
     &[data-checked] {
