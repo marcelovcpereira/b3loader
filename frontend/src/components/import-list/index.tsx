@@ -130,7 +130,7 @@ const ImportList = (props: ImportListProps) => {
       return (
         <MantineProvider defaultColorScheme="light">
           <Box>
-            <span>No data found</span>
+            <span style={{fontFamily:"tahoma", color:ThemeColor.DARK_BLUE}}>No jobs found</span>
           </Box>
         </MantineProvider>
       )
@@ -168,6 +168,8 @@ const ImportList = (props: ImportListProps) => {
         minWidth:"fit-content",
         fontFamily: "tahoma",
         fontSize:"13px",
+        marginLeft:"auto",
+        marginRight:"auto"
     }
 
       const items = api.data? api.data.map((item:ImportJob) => (

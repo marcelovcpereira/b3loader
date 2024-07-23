@@ -73,7 +73,7 @@ const FileUploader = (props: FileUploaderProps) => {
       <h2 style={{fontSize:"27px",color:"#6f7380", fontFamily:"tahoma", textAlign:"left"}}>{UPLOAD_QUOTES_MESSAGE}</h2>
       
       <h3 style={{fontSize:fontSize}}>{progress > 0 && progress < 100 && <Loader color="blue" style={{marginRight:"20px"}}/>} {status}</h3>
-      {progress > 0 && <Progress value={progress} style={{display:"block", marginBottom:"20px"}}/>}
+      {progress > 0 && <Progress value={progress} color={ThemeColor.PRIMARY} style={{display:"block", marginBottom:"20px", borderStyle:"solid",borderColor:ThemeColor.LIGHT_BLUE}}/>}
       <h3
           style={{
             fontSize:"15px",

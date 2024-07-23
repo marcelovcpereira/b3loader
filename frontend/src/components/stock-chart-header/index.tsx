@@ -13,7 +13,7 @@ type StockChartHeaderProps = {
     setPeriod: (e:string)=>void
 }
 
-const periodOptions = ["5y", "3y", "2y", "1y"]
+const periodOptions = ["6y","5y", "3y", "2y", "1y"]
 
 
 const getCurrentStockStatus = (data: Quote[]) => {

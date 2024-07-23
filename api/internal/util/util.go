@@ -242,6 +242,8 @@ func ParseQuoteQueryPeriod(str string) common.QuoteQueryPeriod {
 		return common.Last3Years
 	case "5y":
 		return common.Last5Years
+	case "6y":
+		return common.Last6Years
 	default:
 		return common.Last1Year
 	}

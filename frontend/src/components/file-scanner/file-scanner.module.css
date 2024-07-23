@@ -29,8 +29,11 @@
   
   .description {
     margin-top: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+    padding: 0px;
     color: var(--mantine-color-dimmed);
-    font-size: var(--mantine-font-size-xs);
+    font-size: 10px;
   }
 
   .buttons {

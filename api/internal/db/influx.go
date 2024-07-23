@@ -23,11 +23,11 @@ type InfluxQuoteDB struct {
 	BufferSize int
 }
 
-func NewInfluxQuoteDB(config common.Config, buffer int) *InfluxQuoteDB {
+func NewInfluxQuoteDB(config common.Config) *InfluxQuoteDB {
 	db := InfluxQuoteDB{
 		Client:     nil,
 		Config:     config,
-		BufferSize: buffer,
+		BufferSize: config.QuoteFileLoaderBufferSize,
 	}
 	db.Connect()
 	return &db
@@ -45,7 +45,7 @@ func (db *InfluxQuoteDB) PersistQuotes(quotes []common.DailyQuote) error {
 	return nil
 }
 
-func (db *InfluxQuoteDB) createBucketIfNotExists(bucket string) {
+func (db *InfluxQuoteDB) CreateBucketIfNotExists(bucket string) {
 	_, err := db.Client.BucketsAPI().FindBucketByName(context.Background(), bucket)
 	if err != nil {
 		org, err := db.Client.OrganizationsAPI().GetOrganizations(context.Background())
@@ -59,7 +59,6 @@ func (db *InfluxQuoteDB) createBucketIfNotExists(bucket string) {
 func (db *InfluxQuoteDB) RetryableWritePoints(attempts int, points []*write.Point, bucket string) error {
 	currentAttempt := 1
 	writeAPI := db.Client.WriteAPIBlocking(db.Config.InfluxORG, bucket)
-	db.createBucketIfNotExists(bucket)
 	defer writeAPI.Flush(context.Background())
 	backOff := DefaultBackoffIntervalSeconds
 	for currentAttempt <= attempts {
@@ -163,7 +162,6 @@ func (db *InfluxQuoteDB) SearchStocks(stockName string) []string {
 
 	if err == nil {
 		for result.Next() {
-			fmt.Printf("value: %v\n", result.Record().Value())
 			value := (result.Record().Value()).(string)
 			stocks = append(stocks, value)
 		}

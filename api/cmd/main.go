@@ -11,9 +11,7 @@ import (
 )
 
 const (
-	DefaultCutoffDate                = "20180101"
-	DefaultQuoteFileLoaderBufferSize = 7000
-	DefaultSleepSeconds              = 2
+	DefaultCutoffDate = "20180101"
 )
 
 func main() {
@@ -22,12 +20,12 @@ func main() {
 	fmt.Printf("--------------------------------------\n")
 	config := common.LoadConfig()
 	config.SetCutoffDate(DefaultCutoffDate)
-	config.SetQuoteFileLoaderBufferSize(DefaultQuoteFileLoaderBufferSize)
-	config.SetDefaultSleepSeconds(DefaultSleepSeconds)
 	config.PrintConfig()
 
-	db := db2.NewInfluxQuoteDB(config, DefaultQuoteFileLoaderBufferSize)
+	db := db2.NewInfluxQuoteDB(config)
 	handler := handlers.NewHandler(config, db)
+
+	db.CreateBucketIfNotExists("import_jobs")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/v1/quotes/upload", handler.HandleUpload)

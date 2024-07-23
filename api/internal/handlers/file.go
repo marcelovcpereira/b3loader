@@ -139,7 +139,7 @@ func (h *Handler) updateJob(job common.ImportJob, status common.ImportJobStatus,
 	ret.Status = status
 	ret.Id = job.Id
 	ret.Date = job.Date
-	ret.DurationSeconds = job.DurationSeconds + int64(time.Now().Sub(job.Date).Seconds())
+	ret.DurationSeconds = int64(time.Now().Sub(job.Date).Seconds())
 	ret.Progress = progress
 	ret.FileName = job.FileName
 	ret.Sort = job.Sort + 1
@@ -506,6 +506,7 @@ func (h *Handler) HandleListImports(writer http.ResponseWriter, request *http.Re
 	writer.Header().Set("Access-Control-Allow-Origin", "*")
 
 	var ret []common.ImportJob
+	ret = []common.ImportJob{}
 	okResponse := "{\"status\":\"ok\", \"code\":200, \"data\": %s}"
 	errorResponse := "{\"status\":\"error\", \"code\":500, \"error\": \"%s\"}"
 	jobs := h.DB.ListJobIds()

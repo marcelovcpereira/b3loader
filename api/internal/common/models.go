@@ -57,8 +57,8 @@ func LoadConfig() Config {
 		InfluxToken:               os.Getenv("INFLUXDB_ADMIN_TOKEN"),
 		Port:                      os.Getenv("B3LOADER_PORT"),
 		CutoffDate:                "19800101",
-		QuoteFileLoaderBufferSize: 7000,
-		DefaultSleepSeconds:       2,
+		QuoteFileLoaderBufferSize: 10000,
+		DefaultSleepSeconds:       4,
 	}
 }
 
@@ -121,6 +121,7 @@ const (
 	Last2Years  QuoteQueryPeriod = "-2y"
 	Last3Years  QuoteQueryPeriod = "-3y"
 	Last5Years  QuoteQueryPeriod = "-5y"
+	Last6Years  QuoteQueryPeriod = "-6y"
 )
 
 type ImportJob struct {

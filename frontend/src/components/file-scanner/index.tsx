@@ -126,7 +126,8 @@ export default function FileScanner(props: FileScannerProps) {
             color: ThemeColor.DARK_RED, 
             fontFamily:"tahoma", 
             textAlign:"left",
-            backgroundColor: ThemeColor.LIGHT_RED
+            backgroundColor: ThemeColor.LIGHT_RED,
+            paddingLeft: "5px"
           }}
         >
           { err != null ? err : "" }
@@ -134,10 +135,11 @@ export default function FileScanner(props: FileScannerProps) {
         <h3
           style={{
             fontSize:"15px",
-            color: ThemeColor.LIGHT_GREEN, 
+            color: ThemeColor.WHITE, 
             fontFamily:"tahoma", 
             textAlign:"left",
-            backgroundColor: ThemeColor.LIGHT_RED
+            backgroundColor: ThemeColor.LIGHT_GREEN,
+            paddingLeft: "5px"
           }}
         >
           { success != null ? success : "" }
