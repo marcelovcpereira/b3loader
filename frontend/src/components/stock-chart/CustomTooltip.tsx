@@ -15,6 +15,7 @@ type Payload = {
   name: string
   value: number
   fill: string
+  date: Date
 }
 
 function parseMoney(money: number): string {
@@ -31,15 +32,16 @@ const options : Intl.DateTimeFormatOptions = {
 export default function CustomTooltip(props:CustomTooltipProps) {
   const { active, payload } = props;
   if (active) {
-    const currData = payload && payload.length ? payload[0].payload : null;
+    const currData = payload && payload.length ? payload[0] as Payload: null;
+    console.log("CURRRR DATE", currData)
     return (
       <div className="area-chart-tooltip" style={style}>
         <span>
-          <b>{currData ? parseMoney(currData.Value) : " -- "}</b>
+          <b>{currData ? parseMoney(currData.value) : " -- "}</b>
         </span>
         <br></br>
         <span>
-          {currData ? new Date(currData.Date).toLocaleDateString("pt-BR", options) : " -- "}
+          {currData ? new Date().toLocaleDateString("pt-BR", options) : " -- "}
         </span>
       </div>
     );

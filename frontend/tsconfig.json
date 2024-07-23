@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
-    "sourceMap": true
+    "sourceMap": true,
+    "allowJs": true,
   },
   "files": [],
+  "allowJs": true,
   "references": [
     {
       "path": "./tsconfig.app.json"

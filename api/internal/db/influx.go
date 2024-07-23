@@ -112,6 +112,7 @@ func (db *InfluxQuoteDB) Close() {
 func (db *InfluxQuoteDB) GetStockValues(stockName string, period common.QuoteQueryPeriod) []common.StockValue {
 	measurement := "daily_quote"
 	var stocks []common.StockValue
+	stocks = []common.StockValue{}
 	query := fmt.Sprintf(
 		`from(bucket: "%s")|> range(start: %s)|> filter(fn: (r) => r["_measurement"] == "%s")|> filter(fn: (r) => r["StockName"] == "%s")|> filter(fn: (r) => r["_field"] == "LastPrice")|> yield(name: "last")`,
 		db.Config.InfluxBucket,

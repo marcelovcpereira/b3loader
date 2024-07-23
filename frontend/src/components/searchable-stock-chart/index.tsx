@@ -55,7 +55,7 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
   const [stock, setStock] = useState("BBAS3"); 
 
   // Selected Period
-  const [period, setPeriod] = useState("1y"); 
+  const [period, setPeriod] = useState("6y"); 
 
   const updatePeriod = (periodo: string) => {
     console.log("UPDATING PERIOD...", periodo)
@@ -127,6 +127,7 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
       <div  style={{marginLeft:"40px"}}>
       <MantineProvider defaultColorScheme="light">
         {RenderInput()}
+        <StockChartHeader data={api.data} stockName={stock} period={period} setPeriod={updatePeriod}/>
         <Loader color="blue" style={{marginLeft:"20px", marginTop:"5px"}}/>
       </MantineProvider>
       </div>
@@ -171,10 +172,11 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
     return (
       <div  style={{marginLeft:"40px"}}>
       <MantineProvider defaultColorScheme="light">
-        <Box style={{width:"900px",height:"400px", marginLeft:"15px", marginTop:"5px"}}>
+        
         {RenderInput()}
-          <span>{NO_DATA_FOUND_MESSAGE}</span>
-        </Box>
+        <StockChartHeader data={api.data} stockName={stock} period={period} setPeriod={updatePeriod}/>
+        <span>{NO_DATA_FOUND_MESSAGE}</span>
+        
       </MantineProvider>
       </div>
     )

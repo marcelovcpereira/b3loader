@@ -17,6 +17,7 @@ const periodOptions = ["6y","5y", "3y", "2y", "1y"]
 
 
 const getCurrentStockStatus = (data: Quote[]) => {
+    if (data.length > 0) {
     const first = data[0].Value
     const last = data[data.length-1].Value
     const diff = (last - first).toFixed(2)
@@ -31,20 +32,29 @@ const getCurrentStockStatus = (data: Quote[]) => {
     return (
         <span style={{color:color, height:"100%", display:"block", paddingTop:"15px"}}>{diff}({sign}{percent.toFixed(2)}%)</span>
     )
+} else {
+    return (<></>)
+}
 }
 
 const getCurrentStockValue = (data: Quote[]) => {
-    return (
-        <span style={{color:"#6f7380", fontFamily:"system-ui", fontSize:"30px"}}>
-            {Helper.parseMoney(data[data.length-1].Value)}
-        </span>
-    )
+    if (data.length > 0) {
+        return (
+            <span style={{color:"#6f7380", fontFamily:"system-ui", fontSize:"30px"}}>
+                {Helper.parseMoney(data[data.length-1].Value)}
+            </span>
+        )
+    } else {
+        return (
+            <span style={{color:"#6f7380", fontFamily:"system-ui", fontSize:"30px"}}>
+                {Helper.parseMoney(0.0)}
+            </span>
+        )
+    }
 }
 
 export default function StockChartHeader(props: StockChartHeaderProps) {
     const [value, setValue] = useState<string | null>(null);
-    // const tally = <IconTallymark1 strokeWidth={1} style={{color: ThemeColor.LIGHT_BLUE, position:"relative", top:"25%"}}/>
-    // Selected Stock Label 
     return (
         <MantineProvider defaultColorScheme="light">
         <div id="stockHeader" style={{maxWidth: "900px", maxHeight: "60px", height:"60px", textAlign:"left"}}>
