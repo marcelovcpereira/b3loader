@@ -243,10 +243,11 @@ func (h *Handler) processFile(fileName string) {
 			}
 			batchCount++
 			totalQuotes += len(quotesBuffer)
-			fmt.Printf("Handler: Batch #%d: Saved %d quotes. Total %d, sleeping %ds...\n", batchCount, len(quotesBuffer), totalQuotes, h.Config.DefaultSleepSeconds)
+			message := fmt.Sprintf("Batch #%d: Saved %d quotes. Total %d", batchCount, len(quotesBuffer), totalQuotes)
+			fmt.Printf("Handler: %s, sleeping %ds...\n\n", message, h.Config.DefaultSleepSeconds)
 			time.Sleep(time.Duration(h.Config.DefaultSleepSeconds) * time.Second)
 			quotesBuffer = []common.DailyQuote{}
-			job = h.updateJob(job, common.JobRunning, "Reading file...", getProgress(scannedLines, totalLines))
+			job = h.updateJob(job, common.JobRunning, message, getProgress(scannedLines, totalLines))
 		}
 
 	}

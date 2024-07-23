@@ -165,19 +165,19 @@ const ImportList = (props: ImportListProps) => {
         marginTop:"10px",
         display:"inline", 
         margin:"5px", 
-        minWidth:"fit-content",
         fontFamily: "tahoma",
         fontSize:"13px",
         marginLeft:"auto",
-        marginRight:"auto"
+        marginRight:"auto",
+        overflow:"scroll"
     }
 
       const items = api.data? api.data.map((item:ImportJob) => (
-        <li key={item.Id} style={{marginBottom:"15px",borderStyle:"solid", borderColor:"#DFE2E6", borderRadius:"5px", overflow: "scroll", width:"100%"}}>
-            <Grid id={"listGrid" + item.Id} style={{maxWidth:"100%", maxHeight:"100%", overflow:"scroll"}}>
+        <li key={item.Id} style={{marginBottom:"15px",borderStyle:"solid", borderColor:"#DFE2E6", borderRadius:"5px", overflow: "hidden", width:"100%"}}>
+            <Grid id={"listGrid" + item.Id} style={{maxWidth:"100%", maxHeight:"100%", overflow:"hidden"}}>
                 <Grid.Col span={1} style={itemStyle}>{item.Id.split("-")[0]}</Grid.Col>
                 <Grid.Col span={2} style={itemStyle}>{item.FileName}</Grid.Col>
-                <Grid.Col span={1} style={itemStyle}>{getStatus(item.Status)}</Grid.Col>
+                <Grid.Col span={2} style={itemStyle}>{getStatus(item.Status)}</Grid.Col>
                 <Grid.Col span={1} style={itemStyle}>{item.Progress.toFixed(2)}%</Grid.Col>
                 <Grid.Col span={2} style={itemStyle}>{item.Message}</Grid.Col>
                 <Grid.Col span={1} style={itemStyle}>{parseDuration(item.DurationSeconds)}</Grid.Col>
@@ -212,7 +212,7 @@ const ImportList = (props: ImportListProps) => {
             <Grid  style={{maxWidth:"100%", maxHeight:"100%", marginBottom:"10px"}}>
               <Grid.Col span={1} style={itemStyle}>Id</Grid.Col>
               <Grid.Col span={2} style={itemStyle}>File</Grid.Col>
-              <Grid.Col span={1} style={itemStyle}>Status</Grid.Col>
+              <Grid.Col span={2} style={itemStyle}>Status</Grid.Col>
               <Grid.Col span={1} style={itemStyle}>Progress</Grid.Col>
               <Grid.Col span={2} style={itemStyle}>Message</Grid.Col>
               <Grid.Col span={1} style={itemStyle}>Duration</Grid.Col>
