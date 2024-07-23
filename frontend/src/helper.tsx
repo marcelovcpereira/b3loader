@@ -89,6 +89,27 @@ export class Helper {
     console.log(`Defined ${ticks.length} ticks: ${ticks.join(",")}`)
     return ticks
   }
+  static getStartFromPeriod = (period:string): Date => {
+    const now = new Date()
+    const val = parseInt(period.replace("y",""))
+    return new Date(now.setFullYear(now.getFullYear()-val))
+}
+
+  static getTicksFromPeriod(period: string): number[] {
+    const ticks: number[] = []
+    const monthInterval = 2
+    let start = this.getStartFromPeriod(period)
+    const end: Date = new Date()
+    ticks.push(start.valueOf())
+    start = this.getMonthsOldDate(start, monthInterval)
+    while(start < end) {
+        ticks.push(start.valueOf())
+        start = this.getMonthsOldDate(start, monthInterval)
+    }
+    ticks.push(end.valueOf())
+    console.log(`Defined ${ticks.length} ticks: ${ticks.join(",")}`)
+    return ticks
+  }
   static getDomainFromDateList(values: Date[]): number[] {
     values.sort((a, b) => (a < b ? -1 : 1))
     const start = values[0]

@@ -7,8 +7,11 @@ import { MantineProvider } from '@mantine/core';
 
 export interface StockChartProps {
     stockName: string
+    period: string
     data: Quote[]
 }
+
+
 
 export default function StockChart(props: StockChartProps) {
     return (
@@ -33,8 +36,8 @@ export default function StockChart(props: StockChartProps) {
                     dataKey='Date'
                     tickFormatter = {(timestamp) => moment(timestamp).format('DD/MM/YYYY')}
                     tick={{strokeWidth: 1}}
-                    ticks={Helper.getTicksFromDateList(props.data.map(e=>new Date(e.Date)))}
-                    domain={Helper.getDomainFromDateList(props.data.map(e=>new Date(e.Date)))}
+                    ticks={Helper.getTicksFromPeriod(props.period)}
+                    domain={[Helper.getStartFromPeriod(props.period).valueOf(), new Date().valueOf()]}
                 />
                 <Area
                     type="monotone"

@@ -15,7 +15,6 @@ type StockChartHeaderProps = {
 
 const periodOptions = ["6y","5y", "3y", "2y", "1y"]
 
-
 const getCurrentStockStatus = (data: Quote[]) => {
     if (data.length > 0) {
     const first = data[0].Value
@@ -25,12 +24,12 @@ const getCurrentStockStatus = (data: Quote[]) => {
     const width = 15
     const color = percent > 1 ? ThemeColor.LIGHT_GREEN : percent < 1 ? "red" : ThemeColor.LIGHT_BLUE
     const sign = percent > 1 ? 
-            <IconArrowUp width={width} color={ThemeColor.LIGHT_GREEN} style={{verticalAlign:"middle"}}/> 
+            <IconArrowUp key={"upAR"} width={width} color={ThemeColor.LIGHT_GREEN} style={{verticalAlign:"middle"}}/> 
         :percent < 1 ? 
-            <IconArrowDown width={width} color={"red"} style={{verticalAlign:"middle"}}/> 
+            <IconArrowDown key={"downAr"} width={width} color={"red"} style={{verticalAlign:"middle"}}/> 
         : <></>
     return (
-        <span style={{color:color, height:"100%", display:"block", paddingTop:"15px"}}>{diff}({sign}{percent.toFixed(2)}%)</span>
+        <span key={"percentSpan"} style={{color:color, height:"100%", display:"block", paddingTop:"15px"}}>{diff}({sign}{percent.toFixed(2)}%)</span>
     )
 } else {
     return (<></>)
@@ -40,13 +39,13 @@ const getCurrentStockStatus = (data: Quote[]) => {
 const getCurrentStockValue = (data: Quote[]) => {
     if (data.length > 0) {
         return (
-            <span style={{color:"#6f7380", fontFamily:"system-ui", fontSize:"30px"}}>
+            <span key={"parseMoney"} style={{color:"#6f7380", fontFamily:"system-ui", fontSize:"30px"}}>
                 {Helper.parseMoney(data[data.length-1].Value)}
             </span>
         )
     } else {
         return (
-            <span style={{color:"#6f7380", fontFamily:"system-ui", fontSize:"30px"}}>
+            <span key={"parseZero"} style={{color:"#6f7380", fontFamily:"system-ui", fontSize:"30px"}}>
                 {Helper.parseMoney(0.0)}
             </span>
         )
@@ -58,7 +57,7 @@ export default function StockChartHeader(props: StockChartHeaderProps) {
     return (
         <MantineProvider defaultColorScheme="light">
         <div id="stockHeader" style={{maxWidth: "900px", maxHeight: "60px", height:"60px", textAlign:"left"}}>
-            <Grid>
+            <Grid >
                 <Grid.Col span={3} key={"stockName"} style={{
                     float:"left", 
                     paddingTop: "10px",
@@ -72,7 +71,7 @@ export default function StockChartHeader(props: StockChartHeaderProps) {
                         {props.stockName.toUpperCase()}
                     </span>
                 </Grid.Col>
-                <Grid.Col id="periodGridCol" key={"periods"} span={4} style={{
+                <Grid.Col id="periodGridCol" span={4} style={{
                     display: "flex",
                     alignItems:"center"
                 }}>
@@ -85,22 +84,18 @@ export default function StockChartHeader(props: StockChartHeaderProps) {
                         <Grid style={{marginTop:"8px"}}>
                             {periodOptions.map((item:string) => {
                                 return (
-                                    <>
-                                    <Grid.Col key={item} span={2}>
+                                    <Grid.Col key={"col"+item} span={2}>
                                         <Radio.Card 
                                             className={props.period == item ? classes.periodButtonSelected : classes.periodButton} 
                                             radius="md" 
                                             value={item}
-                                            key={item}
                                             onClick={() => props.setPeriod(item)}
                                             checked={props.period==item}
                                         >
-                                            <Text style={{margin:"auto", padding:"auto"}}>{item}</Text>
+                                            <Text  style={{margin:"auto", padding:"auto"}}>{item}</Text>
                                         </Radio.Card>
                                             
                                     </Grid.Col>
-                                    
-                                    </>
                                 )
                             })
                             }

@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { Box, useCombobox } from '@mantine/core';
+import { useCombobox } from '@mantine/core';
 import { MantineProvider } from '@mantine/core';
 import { IconInfoCircle } from '@tabler/icons-react';
 import { Loader } from '@mantine/core';
@@ -152,7 +152,7 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
       <div  style={{marginLeft:"40px"}}>
         {RenderInput()}
         <StockChartHeader data={api.data} stockName={stock} period={period} setPeriod={updatePeriod}/>
-        <StockChart data={api.data} stockName={stock}/>
+        <StockChart data={api.data} stockName={stock} period={period}/>
     </div>
     )
   }
@@ -189,11 +189,13 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
       updateSearch(searchTerm)
     }, 1000)
     return () => clearTimeout(delayDebounceFn)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm])
 
     // Initialize Chart
     useEffect(() => {
       updateChart(stock)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
   return (
