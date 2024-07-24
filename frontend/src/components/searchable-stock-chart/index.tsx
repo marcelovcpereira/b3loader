@@ -55,7 +55,7 @@ export default function SearchableStockChart(props: SearchableStockChartProps) {
   const [stock, setStock] = useState("BBAS3"); 
 
   // Selected Period
-  const [period, setPeriod] = useState("6y"); 
+  const [period, setPeriod] = useState("1y"); 
 
   const updatePeriod = (periodo: string) => {
     console.log("UPDATING PERIOD...", periodo)

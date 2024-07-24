@@ -3,7 +3,19 @@ services:
     image: influxdb
     container_name: influxdb
     restart: always
-    cpus: 2
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '4'
+          memory: 12G
+        reservations:
+          cpus: '1'
+          memory: 8G
     environment:
       DOCKER_INFLUXDB_INIT_MODE: "setup"
       DOCKER_INFLUXDB_INIT_USERNAME: ${INFLUXDB_USER}
