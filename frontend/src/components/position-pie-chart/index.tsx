@@ -1,6 +1,6 @@
 import { PieChart, Pie, Sector, Cell } from "recharts";
 import { data } from './data'
-import { Helper, ThemeColor } from "../../helper";
+import { Helper, ThemeColor, chartColors } from "../../helper";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 
 export type DataItem = {
@@ -19,7 +19,11 @@ type Payload = {
   stroke: string
   uv: number
 }
-const COLORS = Helper.getThemeColors()
+const COLORS = chartColors
+
+export interface PositionPieChartProps {
+  data: DataItem[]
+} 
 
 const renderShape = (props: PieSectorDataItem) => {
   const RADIAN = Math.PI / 180;
@@ -93,7 +97,8 @@ const renderShape = (props: PieSectorDataItem) => {
   );
 };
 
-export default function PositionPieChart() {
+export default function PositionPieChart(props: PositionPieChartProps) {
+  const data = props.data
   return (
     <PieChart width={550} height={400}>
       <Pie
@@ -106,7 +111,7 @@ export default function PositionPieChart() {
         outerRadius={80}
         fill="#84846c"
         dataKey="uv"
-        paddingAngle={5}        
+        paddingAngle={0}        
       >
         {
           data.map((_, index) => (

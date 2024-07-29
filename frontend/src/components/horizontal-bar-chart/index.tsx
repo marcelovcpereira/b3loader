@@ -1,9 +1,9 @@
 
 import { CartesianGrid, BarChart, XAxis, YAxis, Bar, Tooltip, Cell } from 'recharts';
-import { data } from './data';
+// import { data } from './data';
 import { Box } from '@mantine/core';
 import CustomTooltip from './CustomTooltip';
-import { Helper } from '../../helper';
+import { Helper, chartColors } from '../../helper';
 
 export type DataItem = {
     name: string;
@@ -11,11 +11,15 @@ export type DataItem = {
     pv: number;
 }
 
-const COLORS = Helper.getThemeColors()
+export interface HorizontalBarChartProps {
+    data: DataItem[]
+} 
 
-export default function HorizontalBarChart() {
-    const orderedData = Array.from(data) as DataItem[]
-    if (data && data.length > 0) {
+const COLORS = chartColors
+
+export default function HorizontalBarChart(props: HorizontalBarChartProps) {
+    const orderedData = props.data
+    if (orderedData.length > 0) {
         orderedData.sort((a, b) => (b.uv < a.uv ? -1 : 1))
     }
   return (  
@@ -33,13 +37,8 @@ export default function HorizontalBarChart() {
             style={{fontFamily:"sans-serif"}}
         />
         <Tooltip formatter={Helper.parseMoney} content={<CustomTooltip active={false} payload={[]}/>}/>
-        <Bar name="Quantity" dataKey="pv" fill="#b7b79e">
-            {data.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-        </Bar>
         <Bar name="Value" dataKey="uv" fill="#84846c">
-        {data.map((_, index) => (
+        {orderedData.map((_, index) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
         </Bar>

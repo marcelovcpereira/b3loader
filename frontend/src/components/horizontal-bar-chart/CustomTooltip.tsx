@@ -15,8 +15,14 @@ type Payload = {
   name: string
   value: number
   fill: string
+  payload: DataItem
 }
 
+export type DataItem = {
+  name: string;
+  uv: number;
+  pv: number;
+}
 function addDots(val: string): string {
   let ret = ""
   const parts = val.split(",")
@@ -44,18 +50,19 @@ function parseMoney(money: number): string {
 
 export default function CustomTooltip(props:CustomTooltipProps) {
   const { active, payload } = props;
-  const qtyIndex = 1
+  console.log("TOOLTIP PAYLOAD", payload)
+  // const qtyIndex = 1
   const valIndex = 0
   if (active) {
     return (
       <div className="area-chart-tooltip" style={style}>
-        <h3>{payload && payload.length > 0 ? payload[0].name : " -- "}</h3>
+        <h3>{payload && payload.length > 0 ? payload[0].payload.name : " -- "}</h3>
         <span>
           {payload && payload.length > 0 ? <b style={{color:payload[valIndex].fill}}>{payload[valIndex].name + ": " + parseMoney(payload[valIndex].value)}</b> : <></>}
         </span>
         <br></br>
         <span>
-        {payload && payload.length > 0 ? <b style={{color:payload[qtyIndex].fill}}>{payload[qtyIndex].name + ": " + payload[qtyIndex].value}</b> : <></>}
+        {/* {payload && payload.length > 0 ? <b style={{color:payload[qtyIndex].fill}}>{payload[qtyIndex].name + ": " + payload[qtyIndex].value}</b> : <></>} */}
         </span>
       </div>
     );

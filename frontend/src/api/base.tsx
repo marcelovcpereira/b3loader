@@ -1,3 +1,5 @@
+import { EquitiesPositionsEntity } from "./external/b3"
+
 export type Quote = {
     Date: string | number
     Value: number
@@ -25,7 +27,7 @@ export type BackendResponse = {
 export type ResponseData = {
     status: string;
     code: number;
-    data: Quote[] | File[] | ImportJob[] | string[] | [] | string
+    data: EquitiesPositionsEntity[] | Quote[] | File[] | ImportJob[] | string[] | [] | string
 }
 
 export type UploadChunkResponse = {
@@ -45,4 +47,5 @@ export interface BackendAPI {
     searchQuotesFromStock: (stock: string, period: string) => Promise<BackendResponse>;
     searchStock: (name: string) => Promise<BackendResponse>;
     uploadFileChunk: (chunk: Blob, chunkNumber: number, totalChunks: number, originalName: string, uploadID: string) => Promise<BackendUploadResponse>;
+    getEquitiesPosition: () => Promise<BackendResponse>;
 }

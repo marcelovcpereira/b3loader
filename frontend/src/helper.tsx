@@ -10,6 +10,14 @@ export enum ThemeColor {
   WHITE = '#ffffff'
 }
 
+export const chartColors = [
+  ThemeColor.PRIMARY,
+  ThemeColor.LIGHT_BLUE,
+  ThemeColor.SECONDARY,
+  ThemeColor.DARK_BLUE,
+  ThemeColor.DARK_GREEN,
+]
+
 export class Helper {
   static humanFileSize = (bytes:number, dp=1): string => {
     const thresh = 1000;
@@ -60,12 +68,11 @@ export class Helper {
     const end = ordered[ordered.length-1]
     const tickInterval = Math.floor((end - start)/totalTicks)
     let currTick = 0
-    const sum = values.reduce((a,b) => {return a+b})
     while(currTick <= end) {
         ticks.push(currTick)
         currTick += tickInterval
     }
-    ticks.push(sum)
+    ticks.push(ticks[ticks.length-1]*1.1)
     console.log(`Defined UV ${ticks.length} ticks: ${ticks.join(",")}`)
     return ticks
   }
