@@ -1,6 +1,6 @@
 import { PieChart, Pie, Sector, Cell } from "recharts";
 import { data } from './data'
-import { Helper, ThemeColor, chartColors } from "../../helper";
+import { Helper, ThemeColor } from "../../helper";
 import { PieSectorDataItem } from "recharts/types/polar/Pie";
 
 export type DataItem = {
@@ -19,10 +19,10 @@ type Payload = {
   stroke: string
   uv: number
 }
-const COLORS = chartColors
 
 export interface PositionPieChartProps {
   data: DataItem[]
+  colors: string[]
 } 
 
 const renderShape = (props: PieSectorDataItem) => {
@@ -115,7 +115,7 @@ export default function PositionPieChart(props: PositionPieChartProps) {
       >
         {
           data.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            <Cell key={`cell-${index}`} fill={props.colors[index % props.colors.length]} />
           ))
         }  
       </Pie>

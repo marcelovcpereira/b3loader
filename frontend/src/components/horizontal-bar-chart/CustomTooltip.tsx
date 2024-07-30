@@ -50,7 +50,6 @@ function parseMoney(money: number): string {
 
 export default function CustomTooltip(props:CustomTooltipProps) {
   const { active, payload } = props;
-  console.log("TOOLTIP PAYLOAD", payload)
   // const qtyIndex = 1
   const valIndex = 0
   if (active) {

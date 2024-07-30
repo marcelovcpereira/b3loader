@@ -7,7 +7,8 @@ export enum ThemeColor {
   DARK_BLUE = '#6f7380',
   DARK_GREEN = '#5c8d68',
   LIGHT_GREEN = '#82be90',
-  WHITE = '#ffffff'
+  WHITE = '#ffffff',
+  
 }
 
 export const chartColors = [
@@ -16,6 +17,12 @@ export const chartColors = [
   ThemeColor.SECONDARY,
   ThemeColor.DARK_BLUE,
   ThemeColor.DARK_GREEN,
+]
+export const chartColorsSecondary = [
+  '#41729F',
+  '#5885AF',
+  '#274472',
+  '#C3E0E5',
 ]
 
 export class Helper {
