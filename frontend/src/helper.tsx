@@ -1,3 +1,5 @@
+import { MockStockSubtype } from "./api/external/mockData";
+
 export enum ThemeColor {
   PRIMARY = '#b7b79e',
   DARK_RED = '#b79e9e',
@@ -135,5 +137,21 @@ export class Helper {
 
   static getThemeColors(): string[] {
     return Object.values(ThemeColor)
+  }
+
+  static getFriendlySubtype(sub: MockStockSubtype): string {
+    switch (sub) {
+      case MockStockSubtype.COMPANY_BANK: return 'Bank';
+      case MockStockSubtype.REIT_PAPER: return 'Paper';
+      case MockStockSubtype.REIT_BRICK: return 'Brick';
+      case MockStockSubtype.REIT_HYBRID: return 'Hybrid';
+      case MockStockSubtype.COMPANY_ENERGY: return 'Energy';
+      case MockStockSubtype.COMPANY_INSURANCE: return 'Insurance';
+      case MockStockSubtype.COMPANY_INFRA: return 'Infra';
+      case MockStockSubtype.COMPANY_COMMODITIES: return 'Commodities';
+      case MockStockSubtype.FUND_INFRA: return 'Infra';
+      case MockStockSubtype.FUND_OTHER: return 'Other';
+      default: return ''
+    }
   }
 }

@@ -53,3 +53,45 @@ export const response: EquitiesResponse = {
         last: "string",
     }
 }
+
+export enum MockStockType {
+    COMPANY = 'company',
+    REIT = 'reit',
+    FUND = 'fund'
+}
+
+export enum MockStockSubtype {
+    REIT_PAPER = 'reit_paper',
+    REIT_BRICK = 'reit_brick',
+    REIT_HYBRID = 'reit_hybrid',
+    COMPANY_BANK = 'company_bank',
+    COMPANY_ENERGY = 'company_energy',
+    COMPANY_INSURANCE = 'company_insurance',
+    COMPANY_INFRA = 'company_infra',
+    COMPANY_COMMODITIES = 'company_commodities',
+    FUND_INFRA = 'fund_infra',
+    FUND_OTHER = 'fund_other',
+}
+
+export type MockStockDetails = {
+    name: string;
+    type: MockStockType;
+    subtype: MockStockSubtype;
+}
+export const getMockStockDetails = (stockName: string): MockStockDetails | undefined  => {
+    return allDetails.get(stockName)
+}
+
+const allDetails: Map<string,MockStockDetails> = new Map<string, MockStockDetails>([
+    ["BBAS3", {name: "BBAS3", type: MockStockType.COMPANY, subtype: MockStockSubtype.COMPANY_BANK}],
+    ["HSLG11", {name: "HSLG11", type: MockStockType.REIT, subtype: MockStockSubtype.REIT_HYBRID}],
+    ["RZTR11", {name: "RZTR11", type: MockStockType.REIT, subtype: MockStockSubtype.REIT_HYBRID}],
+    ["KNCR11", {name: "KNCR11", type: MockStockType.REIT, subtype: MockStockSubtype.REIT_PAPER}],
+    ["XPLG11", {name: "XPLG11", type: MockStockType.REIT, subtype: MockStockSubtype.REIT_BRICK}],
+    ["AZIN11", {name: "AZIN11", type: MockStockType.FUND, subtype: MockStockSubtype.FUND_INFRA}],
+    ["KLBN4", {name: "KLBN4", type: MockStockType.COMPANY, subtype: MockStockSubtype.COMPANY_COMMODITIES}],
+    ["PETR4", {name: "PETR4", type: MockStockType.COMPANY, subtype: MockStockSubtype.COMPANY_COMMODITIES}],
+    ["TAEE11", {name: "TAEE11", type: MockStockType.COMPANY, subtype: MockStockSubtype.COMPANY_ENERGY}],
+    ["SAPR11", {name: "SAPR11", type: MockStockType.COMPANY, subtype: MockStockSubtype.COMPANY_INFRA}],
+    ["SANB11", {name: "SANB11", type: MockStockType.COMPANY, subtype: MockStockSubtype.COMPANY_BANK}],
+])

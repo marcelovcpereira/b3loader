@@ -3,15 +3,16 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
-	"github.com/influxdata/influxdb-client-go/v2/api/write"
-	"github.com/marcelovcpereira/b3loader/api/internal/common"
-	external_apis "github.com/marcelovcpereira/b3loader/api/internal/external-apis"
 	"math"
 	"math/big"
 	"strconv"
 	"strings"
 	"time"
+
+	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
+	"github.com/marcelovcpereira/b3loader/api/internal/common"
+	external_apis "github.com/marcelovcpereira/b3loader/api/internal/external-apis"
 )
 
 func Trim(val string) string {
@@ -207,13 +208,25 @@ func StockAnalysis(stock string) {
 	//DY, PVP, PL ,Margem Liq, Divida Liq/Ebitda,
 }
 
-func GrahamPrice(lpa float64, vpa float64) float64 {
-	return math.Sqrt(22.5 * lpa * vpa)
+func VPA(vp float64, totalShares float64) float64 {
+	return vp / totalShares
 }
 
-func BasinPrice(dpa float64) float64 {
+func LPA(ll float64, totalShares float64) float64 {
+	return ll / totalShares
+}
+
+func DPA(ll float64, totalShares float64, payoutPercent float64) float64 {
+	return LPA(ll, totalShares) * payoutPercent
+}
+
+func GrahamPrice(ll float64, totalShares float64, vp float64) float64 {
+	return math.Sqrt(22.5 * LPA(ll, totalShares) * VPA(vp, totalShares))
+}
+
+func BasinPrice(ll float64, totalShares float64, payoutPercent float64) float64 {
 	taxaBasicaRemuneracaoRendaFixa := 0.06
-	return dpa / taxaBasicaRemuneracaoRendaFixa
+	return DPA(ll, totalShares, payoutPercent) / taxaBasicaRemuneracaoRendaFixa
 }
 
 func ImportJobToInfluxPoint(job common.ImportJob) *write.Point {
